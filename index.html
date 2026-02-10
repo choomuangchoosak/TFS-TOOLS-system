@@ -13,13 +13,13 @@
             theme: {
                 extend: {
                     colors: { schindler: { red: '#E2001A', dark: '#222' } },
-                    fontFamily: { sans: ['Sarabun', 'sans-serif'] }
+                    fontFamily: { sans: ['Sarabun', 'sans-serif'] } // ใช้ Sarabun เป็นหลัก
                 }
             }
         }
     </script>
     <style>
-        body { background-color: #F8F9FA; -webkit-tap-highlight-color: transparent; font-size: 16px; }
+        body { background-color: #F8F9FA; -webkit-tap-highlight-color: transparent; font-size: 16px; /* เพิ่มขนาดฐานตัวอักษร */ }
         .btn-circle { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .spinner { border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid #E2001A; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -28,13 +28,16 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .animate-pop { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        
+        /* ปรับขนาด Input ให้ใหญ่ขึ้น กดง่าย */
+        input, select, button { touch-action: manipulation; }
+        .input-lg { font-size: 1.1rem; padding: 0.8rem; }
     </style>
 </head>
 <body class="h-full flex flex-col text-gray-800 font-sans">
 
     <header class="bg-black text-white shadow-lg sticky top-0 z-40 border-b-4 border-schindler-red">
-        <div class="max-w-lg mx-auto px-4 h-20 flex items-center justify-between">
-            <div class="flex-1 min-w-0 pr-3">
+        <div class="max-w-lg mx-auto px-4 h-20 flex items-center justify-between"> <div class="flex-1 min-w-0 pr-3">
                 <h1 class="text-2xl font-bold truncate tracking-wide">Schindler</h1>
                 <p class="text-xs text-gray-400 uppercase tracking-widest truncate">ระบบยืม-คืนอุปกรณ์ TFS</p>
             </div>
@@ -71,12 +74,12 @@
             </div>
 
             <div id="userStats" class="grid grid-cols-2 gap-4">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-8 border-gray-800 flex justify-between items-center">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-8 border-green-500 flex justify-between items-center">
                     <div>
-                        <span class="text-sm text-gray-500 font-bold uppercase">อุปกรณ์ทั้งหมด</span>
-                        <div class="text-4xl font-bold text-gray-800 mt-2" id="cTotal">0</div>
+                        <span class="text-sm text-gray-500 font-bold uppercase">ว่าง (พร้อมใช้)</span>
+                        <div class="text-4xl font-bold text-green-600 mt-2" id="cAvail">0</div>
                     </div>
-                    <span class="material-icons text-gray-200 text-5xl">inventory_2</span>
+                    <span class="material-icons text-green-100 text-5xl">check_circle</span>
                 </div>
                 <div class="bg-white p-5 rounded-2xl shadow-sm border-l-8 border-yellow-500 flex justify-between items-center">
                     <div>
@@ -84,13 +87,6 @@
                         <div class="text-4xl font-bold text-yellow-600 mt-2" id="cBorrow">0</div>
                     </div>
                     <span class="material-icons text-yellow-100 text-5xl">pending</span>
-                </div>
-                <div class="col-span-2 bg-white p-5 rounded-2xl shadow-sm border-l-8 border-green-500 flex justify-between items-center bg-green-50/30">
-                    <div>
-                        <span class="text-sm text-gray-500 font-bold uppercase">ว่าง (พร้อมใช้)</span>
-                        <div class="text-5xl font-bold text-green-600 mt-2" id="cAvail">0</div>
-                    </div>
-                    <span class="material-icons text-green-100 text-6xl">check_circle</span>
                 </div>
             </div>
 
@@ -118,13 +114,6 @@
     <button id="addBtn" onclick="openUpsert()" class="hidden fixed bottom-8 right-6 w-16 h-16 bg-schindler-red text-white rounded-full shadow-2xl flex items-center justify-center z-40 transition transform hover:scale-110 active:scale-95">
         <span class="material-icons text-4xl">add</span>
     </button>
-
-    <div id="imgModal" class="hidden fixed inset-0 z-[70] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-pop" onclick="closeImg()">
-        <img id="fullImage" class="max-w-full max-h-full rounded-lg shadow-2xl" src="" onclick="event.stopPropagation()">
-        <button onclick="closeImg()" class="absolute top-6 right-6 text-white bg-gray-800/50 rounded-full p-2 hover:bg-gray-700 transition">
-            <span class="material-icons text-3xl">close</span>
-        </button>
-    </div>
 
     <div id="customAlert" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-6 animate-pop">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center">
@@ -321,9 +310,6 @@
         function render() {
             const grid = document.getElementById('grid');
             grid.innerHTML = '';
-            
-            // Stats Logic
-            document.getElementById('cTotal').innerText = items.length; // Total Items
             document.getElementById('cAvail').innerText = items.filter(x=>x.status==='available').length;
             document.getElementById('cBorrow').innerText = items.filter(x=>x.status!=='available').length;
 
@@ -361,11 +347,13 @@
 
                 const cleanUrl = getImgUrl(x.photoUrl);
                 const imgDisplay = cleanUrl 
-                    ? `<img src="${cleanUrl}" class="w-full h-full object-cover" onclick="showImg('${cleanUrl}'); event.stopPropagation()">` 
+                    ? `<img src="${cleanUrl}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-gray-200 flex items-center justify-center\'><span class=\'material-icons text-gray-400 text-4xl\'>broken_image</span></div>'">` 
                     : `<div class="w-full h-full bg-gray-200 flex items-center justify-center"><span class="material-icons text-gray-400 text-4xl">image</span></div>`;
 
+                // Display info extract from borrower string (ID - Name (Phone) [Note])
                 let borrowInfo = '';
                 if (!isAvail && x.borrower) {
+                    // Simple parser or just show string
                     borrowInfo = `<div class="flex items-start text-sm text-gray-500 bg-gray-50 p-2 rounded-lg mt-2">
                         <span class="material-icons text-base mr-1 mt-0.5">person</span> <span class="line-clamp-1">${x.borrower}</span>
                     </div>`;
@@ -376,7 +364,7 @@
                         ${adminControls}
                         <div class="w-36 bg-gray-100 flex-shrink-0 overflow-hidden relative">
                             ${imgDisplay}
-                            ${!isAvail ? '<div class="absolute inset-0 bg-black/10 pointer-events-none"></div>' : ''}
+                            ${!isAvail ? '<div class="absolute inset-0 bg-black/10"></div>' : ''}
                         </div>
                         <div class="flex-1 p-4 flex flex-col justify-between">
                             <div>
@@ -459,18 +447,22 @@
             document.getElementById('actTitle').className = isAvail ? 'text-2xl font-bold text-green-700' : 'text-2xl font-bold text-purple-700';
             document.getElementById('actSub').innerText = `${selItem.id}: ${selItem.name}`;
             
+            // Reset Fields
             document.getElementById('actEmpId').value = ''; 
             document.getElementById('actName').value = ''; 
             document.getElementById('actPhone').value = ''; 
             document.getElementById('actNote').value = ''; 
 
             if(!isAvail && selItem.borrower) {
+                // Parse old data: "ID - Name (Phone) [Note: ...]"
+                // Simple regex or split
                 const regex = /^(\d+)\s-\s([^(]+)\s?\(?([^)]*)\)?\s?\[?Note:\s?(.*)\]?$/;
                 const match = selItem.borrower.match(regex);
                 if (match) {
                     document.getElementById('actEmpId').value = match[1] || '';
                     document.getElementById('actName').value = match[2].trim() || '';
                     document.getElementById('actPhone').value = match[3] || '';
+                    // Note ไม่ต้อง restore ตอนคืนก็ได้ หรือจะใส่ก็ได้
                 } else {
                     document.getElementById('actName').value = selItem.borrower;
                 }
@@ -488,6 +480,7 @@
             if(!name) { showPopup('ข้อมูลไม่ถูกต้อง', 'กรุณาระบุชื่อ-นามสกุล', 'error'); return; }
             if(!phone) { showPopup('ข้อมูลไม่ถูกต้อง', 'กรุณาระบุเบอร์โทรศัพท์', 'error'); return; }
 
+            // Format Data String
             let userString = `${empId} - ${name} (${phone})`;
             if(note) userString += ` [Note: ${note}]`;
 
@@ -509,6 +502,7 @@
             document.getElementById('alertTitle').innerText = title;
             document.getElementById('alertMsg').innerText = msg;
             
+            // Theme Colors
             if(type === 'success') {
                 iconBox.className = 'w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-green-100 text-green-600';
                 icon.innerText = 'check_circle';
@@ -523,12 +517,22 @@
                 icon.innerText = 'info';
             }
 
-            btns.innerHTML = `<button onclick="closeAlert()" class="flex-1 py-3 bg-gray-800 text-white rounded-xl font-bold text-lg shadow-lg active:scale-95 transition">ตกลง</button>`;
+            // Buttons
+            if(type === 'confirm') {
+                // ต้อง Assign function ภายนอกเองสำหรับ confirm
+                // ในที่นี้เราใช้ Alert ธรรมดาไปก่อน หรือจะประยุกต์ใช้ Promise ก็ได้
+                // เพื่อความง่าย เราจะใช้ confirm เดิมของ browser สำหรับ delete/reject ไปก่อนในบางจุด
+                // ส่วนจุดสำคัญใช้ popup นี้
+            } else {
+                btns.innerHTML = `<button onclick="closeAlert()" class="flex-1 py-3 bg-gray-800 text-white rounded-xl font-bold text-lg shadow-lg active:scale-95 transition">ตกลง</button>`;
+            }
+
             modal.classList.remove('hidden');
         }
 
         function closeAlert() { document.getElementById('customAlert').classList.add('hidden'); }
 
+        // --- Admin & CRUD ---
         function toggleAdmin() {
             if(isAdmin) {
                 isAdmin = false;
@@ -564,4 +568,105 @@
             // Auto Suggest ID
             const nums = items.map(x => parseInt(x.id.replace(/\D/g,'')) || 0);
             const next = nums.length ? Math.max(...nums)+1 : 1;
-            const nextId = `TFS-${String(next).padStart(3,'
+            const nextId = `TFS-${String(next).padStart(3,'0')}`;
+            
+            const idInput = document.getElementById('upId');
+            idInput.value = ''; 
+            idInput.placeholder = nextId; // Show as placeholder suggestion
+            idInput.readOnly = false; // Allow Edit
+
+            document.getElementById('upIdHint').innerText = `แนะนำ: ID ถัดไปคือ ${nextId}`;
+            document.getElementById('upName').value = '';
+            document.getElementById('upPhotoUrl').value = '';
+            document.getElementById('upModal').classList.remove('hidden');
+        }
+
+        function edit(id) {
+            const item = items.find(x=>x.id===id);
+            document.getElementById('upMode').value = 'update';
+            document.getElementById('upTitle').innerText = 'แก้ไขข้อมูล';
+            document.getElementById('upId').value = item.id;
+            document.getElementById('upId').readOnly = true; // Edit mode cannot change ID
+            document.getElementById('upIdHint').innerText = '';
+            document.getElementById('upName').value = item.name;
+            document.getElementById('upPhotoUrl').value = item.photoUrl || '';
+            document.getElementById('upModal').classList.remove('hidden');
+        }
+
+        async function submitUp() {
+            const mode = document.getElementById('upMode').value;
+            const id = document.getElementById('upId').value.trim() || document.getElementById('upId').placeholder;
+            
+            // Check Duplicate ID (Frontend Check)
+            if (mode === 'create' && items.some(x => x.id === id)) {
+                showPopup('ข้อมูลซ้ำ', `รหัสอุปกรณ์ ${id} มีอยู่ในระบบแล้ว`, 'error');
+                return;
+            }
+
+            const success = await send({
+                action: mode,
+                id: id,
+                name: document.getElementById('upName').value,
+                type: document.getElementById('upType').value,
+                photoUrl: document.getElementById('upPhotoUrl').value
+            });
+            if(success) closeM('upModal');
+        }
+
+        async function del(id) { 
+            if(confirm('ยืนยันที่จะลบอุปกรณ์นี้ออกจากระบบ?')) await send({ action: 'delete', id: id }); 
+        }
+
+        // --- Approve / Reject ---
+        function openApprove(id, type, name) {
+            document.getElementById('apprId').value = id;
+            document.getElementById('apprType').value = type;
+            document.getElementById('apprItemName').innerText = name;
+            document.getElementById('apprProofUrl').value = '';
+            document.getElementById('approveModal').classList.remove('hidden');
+        }
+
+        async function submitApprove() {
+            const success = await send({
+                action: document.getElementById('apprType').value === 'borrow' ? 'approve_borrow' : 'approve_return',
+                id: document.getElementById('apprId').value,
+                proofUrl: document.getElementById('apprProofUrl').value
+            });
+            if(success) { closeM('approveModal'); showPopup('สำเร็จ', 'อนุมัติรายการเรียบร้อย', 'success'); }
+        }
+
+        async function reject(id, type) {
+            if(confirm('ยืนยันปฏิเสธคำขอนี้?')) await send({ action: type === 'borrow' ? 'reject_borrow' : 'reject_return', id: id });
+        }
+
+        // --- Utils ---
+        function closeM(id) { document.getElementById(id).classList.add('hidden'); }
+        function setFilter(f) {
+            filter = f;
+            ['btnAll','btnAvail','btnBorrow'].forEach(b => document.getElementById(b).className = 'flex-1 py-2.5 rounded-xl text-base font-bold bg-gray-100 text-gray-600 transition');
+            const active = f==='all'?'btnAll':(f==='available'?'btnAvail':'btnBorrow');
+            document.getElementById(active).className = 'flex-1 py-2.5 rounded-xl text-base font-bold bg-gray-800 text-white transition shadow-md transform scale-105';
+            render();
+        }
+        function togglePass() {
+            const i = document.getElementById('pass');
+            const ico = document.getElementById('eyeIcon');
+            if(i.type==='password') { i.type='text'; ico.innerText='visibility_off'; }
+            else { i.type='password'; ico.innerText='visibility'; }
+        }
+        function switchTab(tab) {
+            if(tab === 'requests') {
+                document.getElementById('tab-requests').classList.add('active');
+                document.getElementById('tab-history').classList.remove('active');
+                document.getElementById('view-requests').classList.remove('hidden');
+                document.getElementById('view-history').classList.add('hidden');
+            } else {
+                document.getElementById('tab-requests').classList.remove('active');
+                document.getElementById('tab-history').classList.add('active');
+                document.getElementById('view-requests').classList.add('hidden');
+                document.getElementById('view-history').classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
