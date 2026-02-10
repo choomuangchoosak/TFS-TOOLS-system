@@ -1,214 +1,242 @@
-
 <!doctype html>
 <html lang="th" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ระบบยืม-คืนอุปกรณ์ TFS</title>
+    <title>Schindler Equipment</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { schindler: { red: '#E2001A' } },
-                    fontFamily: { sans: ['Kanit', 'sans-serif'] }
+                    colors: { schindler: { red: '#E2001A', dark: '#222' } },
+                    fontFamily: { sans: ['Sarabun', 'sans-serif'] } // ใช้ Sarabun เป็นหลัก
                 }
             }
         }
     </script>
     <style>
-        body { background-color: #F3F4F6; -webkit-tap-highlight-color: transparent; }
-        .btn-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .spinner { border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid #E2001A; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+        body { background-color: #F8F9FA; -webkit-tap-highlight-color: transparent; font-size: 16px; /* เพิ่มขนาดฐานตัวอักษร */ }
+        .btn-circle { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .spinner { border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid #E2001A; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .tab-btn.active { border-bottom: 2px solid #E2001A; color: #E2001A; font-weight: bold; background-color: #FEF2F2; }
-        .tab-btn { color: #6B7280; transition: all 0.2s; }
+        .tab-btn.active { border-bottom: 3px solid #E2001A; color: #E2001A; font-weight: bold; background-color: #FEF2F2; }
+        .tab-btn { color: #6B7280; transition: all 0.2s; font-size: 1.1rem; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .animate-slide-up { animation: slideUp 0.3s ease-out; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .animate-pop { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        
+        /* ปรับขนาด Input ให้ใหญ่ขึ้น กดง่าย */
+        input, select, button { touch-action: manipulation; }
+        .input-lg { font-size: 1.1rem; padding: 0.8rem; }
     </style>
 </head>
 <body class="h-full flex flex-col text-gray-800 font-sans">
 
     <header class="bg-black text-white shadow-lg sticky top-0 z-40 border-b-4 border-schindler-red">
-        <div class="max-w-lg mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex-1 min-w-0 pr-2">
-                <h1 class="text-xl font-bold truncate tracking-wide">Schindler</h1>
-                <p class="text-[10px] text-gray-400 uppercase tracking-widest truncate">ระบบยืม-คืนอุปกรณ์ TFS</p>
+        <div class="max-w-lg mx-auto px-4 h-20 flex items-center justify-between"> <div class="flex-1 min-w-0 pr-3">
+                <h1 class="text-2xl font-bold truncate tracking-wide">Schindler</h1>
+                <p class="text-xs text-gray-400 uppercase tracking-widest truncate">ระบบยืม-คืนอุปกรณ์ TFS</p>
             </div>
-            <div class="flex gap-2 flex-shrink-0">
-                <button onclick="toggleAdmin()" class="btn-circle bg-gray-800 hover:bg-gray-700 transition active:scale-95" id="adminBtn">
-                    <span class="material-icons text-white text-xl" id="adminIcon">admin_panel_settings</span>
+            <div class="flex gap-3 flex-shrink-0">
+                <button onclick="toggleAdmin()" class="btn-circle bg-gray-800 hover:bg-gray-700 transition active:scale-95 shadow-md">
+                    <span class="material-icons text-white text-2xl" id="adminIcon">admin_panel_settings</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto p-4 pb-24 hide-scrollbar">
-        <div class="max-w-lg mx-auto space-y-4">
+    <main class="flex-1 overflow-y-auto p-4 pb-28 hide-scrollbar">
+        <div class="max-w-lg mx-auto space-y-6">
             
-            <div id="adminPanel" class="hidden space-y-4 animate-slide-up">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex text-sm overflow-hidden">
-                    <button onclick="switchTab('requests')" id="tab-requests" class="tab-btn active flex-1 py-3 text-center">คำขออนุมัติ</button>
-                    <button onclick="switchTab('history')" id="tab-history" class="tab-btn flex-1 py-3 text-center">ประวัติยืม-คืน</button>
+            <div id="adminPanel" class="hidden space-y-4 animate-pop">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 flex text-lg overflow-hidden">
+                    <button onclick="switchTab('requests')" id="tab-requests" class="tab-btn active flex-1 py-4 text-center">คำขออนุมัติ</button>
+                    <button onclick="switchTab('history')" id="tab-history" class="tab-btn flex-1 py-4 text-center">ประวัติยืม-คืน</button>
                 </div>
 
                 <div id="view-requests">
-                    <div id="reqList" class="space-y-2"></div>
-                    <div id="noReq" class="py-8 text-center text-gray-400 text-xs hidden">
-                        <span class="material-icons text-4xl mb-2 opacity-20">inbox</span><br>ไม่มีรายการคำขอใหม่
+                    <div id="reqList" class="space-y-3"></div>
+                    <div id="noReq" class="py-10 text-center text-gray-400 text-base hidden">
+                        <span class="material-icons text-5xl mb-2 opacity-20">inbox</span><br>ไม่มีรายการคำขอใหม่
                     </div>
                 </div>
 
                 <div id="view-history" class="hidden">
-                    <div id="histList" class="space-y-2"></div>
-                    <div id="noHist" class="py-8 text-center text-gray-400 text-xs hidden">
-                        <span class="material-icons text-4xl mb-2 opacity-20">history</span><br>ยังไม่มีประวัติการใช้งาน
+                    <div id="histList" class="space-y-3"></div>
+                    <div id="noHist" class="py-10 text-center text-gray-400 text-base hidden">
+                        <span class="material-icons text-5xl mb-2 opacity-20">history</span><br>ยังไม่มีประวัติการใช้งาน
                     </div>
                 </div>
             </div>
 
-            <div id="userStats" class="grid grid-cols-2 gap-3">
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-green-500 flex justify-between items-center">
+            <div id="userStats" class="grid grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-8 border-green-500 flex justify-between items-center">
                     <div>
-                        <span class="text-xs text-gray-400 font-bold uppercase">ว่าง (พร้อมใช้)</span>
-                        <div class="text-2xl font-bold text-green-600 mt-1" id="cAvail">0</div>
+                        <span class="text-sm text-gray-500 font-bold uppercase">ว่าง (พร้อมใช้)</span>
+                        <div class="text-4xl font-bold text-green-600 mt-2" id="cAvail">0</div>
                     </div>
-                    <span class="material-icons text-green-100 text-4xl">check_circle</span>
+                    <span class="material-icons text-green-100 text-5xl">check_circle</span>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-yellow-500 flex justify-between items-center">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-8 border-yellow-500 flex justify-between items-center">
                     <div>
-                        <span class="text-xs text-gray-400 font-bold uppercase">ถูกยืม</span>
-                        <div class="text-2xl font-bold text-yellow-600 mt-1" id="cBorrow">0</div>
+                        <span class="text-sm text-gray-500 font-bold uppercase">ถูกยืม</span>
+                        <div class="text-4xl font-bold text-yellow-600 mt-2" id="cBorrow">0</div>
                     </div>
-                    <span class="material-icons text-yellow-100 text-4xl">pending</span>
+                    <span class="material-icons text-yellow-100 text-5xl">pending</span>
                 </div>
             </div>
 
-            <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-200 sticky top-0 z-30">
-                <div class="relative mb-2">
-                    <span class="material-icons absolute left-3 top-2.5 text-gray-400">search</span>
-                    <input type="text" id="searchBox" placeholder="ค้นหาชื่ออุปกรณ์ หรือ รหัส..." class="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg outline-none text-sm focus:bg-white focus:ring-2 focus:ring-schindler-red/20 transition" oninput="render()">
+            <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200 sticky top-2 z-30">
+                <div class="relative mb-3">
+                    <span class="material-icons absolute left-4 top-3.5 text-gray-400 text-2xl">search</span>
+                    <input type="text" id="searchBox" placeholder="ค้นหาชื่อ หรือ รหัส..." class="w-full pl-12 pr-4 py-3 bg-gray-100 rounded-xl outline-none text-lg focus:bg-white focus:ring-2 focus:ring-schindler-red/30 transition" oninput="render()">
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="setFilter('all')" id="btnAll" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-gray-800 text-white transition">ทั้งหมด</button>
-                    <button onclick="setFilter('available')" id="btnAvail" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:bg-green-50 transition">ว่าง</button>
-                    <button onclick="setFilter('borrowed')" id="btnBorrow" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:bg-yellow-50 transition">ถูกยืม</button>
+                <div class="flex gap-3">
+                    <button onclick="setFilter('all')" id="btnAll" class="flex-1 py-2.5 rounded-xl text-base font-bold bg-gray-800 text-white transition shadow">ทั้งหมด</button>
+                    <button onclick="setFilter('available')" id="btnAvail" class="flex-1 py-2.5 rounded-xl text-base font-bold bg-gray-100 text-gray-600 hover:bg-green-50 transition">ว่าง</button>
+                    <button onclick="setFilter('borrowed')" id="btnBorrow" class="flex-1 py-2.5 rounded-xl text-base font-bold bg-gray-100 text-gray-600 hover:bg-yellow-50 transition">ถูกยืม</button>
                 </div>
             </div>
 
-            <div id="grid" class="space-y-3"></div>
+            <div id="grid" class="space-y-4"></div>
             
-            <div id="loading" class="text-center py-10 hidden">
-                <div class="spinner mx-auto mb-3"></div>
-                <span class="text-gray-400 text-xs animate-pulse">กำลังโหลดข้อมูล...</span>
+            <div id="loading" class="text-center py-12 hidden">
+                <div class="spinner mx-auto mb-4"></div>
+                <span class="text-gray-500 text-lg animate-pulse font-medium">กำลังโหลดข้อมูล...</span>
             </div>
         </div>
     </main>
 
-    <button id="addBtn" onclick="openUpsert()" class="hidden fixed bottom-6 right-6 w-14 h-14 bg-schindler-red text-white rounded-full shadow-xl flex items-center justify-center z-40 transition hover:scale-110 active:scale-90">
-        <span class="material-icons text-3xl">add</span>
+    <button id="addBtn" onclick="openUpsert()" class="hidden fixed bottom-8 right-6 w-16 h-16 bg-schindler-red text-white rounded-full shadow-2xl flex items-center justify-center z-40 transition transform hover:scale-110 active:scale-95">
+        <span class="material-icons text-4xl">add</span>
     </button>
 
-    <div id="actModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center transition-opacity">
-        <div class="bg-white w-full md:max-w-md rounded-t-2xl md:rounded-2xl p-6 shadow-2xl animate-slide-up">
-            <div class="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4 md:hidden"></div>
-            <h3 class="text-xl font-bold text-gray-800" id="actTitle">หัวข้อ</h3>
-            <p class="text-sm text-gray-500 mb-6" id="actSub">รายละเอียดอุปกรณ์</p>
+    <div id="customAlert" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-6 animate-pop">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center">
+            <div id="alertIconBox" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-gray-100">
+                <span class="material-icons text-4xl" id="alertIcon">info</span>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2" id="alertTitle">แจ้งเตือน</h3>
+            <p class="text-lg text-gray-600 mb-6 leading-relaxed" id="alertMsg">รายละเอียด...</p>
+            <div class="flex gap-3 justify-center" id="alertBtns">
+                <button onclick="closeAlert()" class="flex-1 py-3 bg-gray-800 text-white rounded-xl font-bold text-lg shadow-lg active:scale-95 transition">ตกลง</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="actModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center">
+        <div class="bg-white w-full md:max-w-md rounded-t-3xl md:rounded-3xl p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+            <div class="w-16 h-1.5 bg-gray-300 rounded-full mx-auto mb-6 md:hidden"></div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-1" id="actTitle">ทำรายการ</h3>
+            <p class="text-base text-gray-500 mb-6 bg-gray-50 p-2 rounded-lg border" id="actSub">...</p>
             
             <form onsubmit="event.preventDefault(); submitAct();">
-                <div class="space-y-4 mb-6">
+                <div class="space-y-5 mb-8">
                     <div>
-                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide">รหัสพนักงาน (6-12 หลัก)</label>
-                        <input type="tel" id="actEmpId" class="w-full mt-1 p-3 border border-gray-300 rounded-xl bg-gray-50 outline-none focus:border-schindler-red focus:ring-1 focus:ring-schindler-red transition font-mono text-lg" placeholder="ตัวอย่าง: 123456" maxlength="12" pattern="\d*" inputmode="numeric" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        <label class="text-base font-bold text-gray-600 mb-1 block">รหัสพนักงาน (6-12 หลัก) <span class="text-red-500">*</span></label>
+                        <input type="tel" id="actEmpId" class="w-full p-4 border border-gray-300 rounded-xl bg-gray-50 text-xl font-medium focus:border-schindler-red focus:ring-2 focus:ring-red-100 outline-none transition" placeholder="เช่น 123456" maxlength="12" pattern="\d*" required>
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide">ชื่อ-นามสกุล</label>
-                        <input type="text" id="actName" class="w-full mt-1 p-3 border border-gray-300 rounded-xl bg-gray-50 outline-none focus:border-schindler-red focus:ring-1 focus:ring-schindler-red transition" placeholder="ระบุชื่อของคุณ" required>
+                        <label class="text-base font-bold text-gray-600 mb-1 block">ชื่อ-นามสกุล <span class="text-red-500">*</span></label>
+                        <input type="text" id="actName" class="w-full p-4 border border-gray-300 rounded-xl text-lg focus:border-schindler-red focus:ring-2 focus:ring-red-100 outline-none transition" placeholder="ระบุชื่อของคุณ" required>
+                    </div>
+                    <div>
+                        <label class="text-base font-bold text-gray-600 mb-1 block">เบอร์โทรศัพท์ติดต่อ <span class="text-red-500">*</span></label>
+                        <input type="tel" id="actPhone" class="w-full p-4 border border-gray-300 rounded-xl text-lg focus:border-schindler-red focus:ring-2 focus:ring-red-100 outline-none transition" placeholder="08xxxxxxxx" required>
+                    </div>
+                    <div>
+                        <label class="text-base font-bold text-gray-600 mb-1 block">หมายเหตุ (ถ้ามี)</label>
+                        <textarea id="actNote" class="w-full p-4 border border-gray-300 rounded-xl text-lg focus:border-schindler-red focus:ring-2 focus:ring-red-100 outline-none transition" rows="2" placeholder="เช่น ใช้งานที่ Site A..."></textarea>
                     </div>
                 </div>
-                <div class="flex gap-3">
-                    <button type="button" onclick="closeM('actModal')" class="flex-1 py-3 bg-gray-100 rounded-xl font-bold text-gray-600 hover:bg-gray-200 transition">ยกเลิก</button>
-                    <button type="submit" class="flex-1 py-3 bg-schindler-red text-white rounded-xl font-bold shadow-lg shadow-red-200 hover:bg-red-700 transition">ยืนยัน</button>
+                <div class="flex gap-4">
+                    <button type="button" onclick="closeM('actModal')" class="flex-1 py-4 bg-gray-100 rounded-xl font-bold text-gray-600 text-lg hover:bg-gray-200 transition">ยกเลิก</button>
+                    <button type="submit" class="flex-1 py-4 bg-schindler-red text-white rounded-xl font-bold text-lg shadow-xl shadow-red-200 hover:bg-red-700 transition">ยืนยัน</button>
                 </div>
             </form>
         </div>
     </div>
 
     <div id="upModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center">
-        <div class="bg-white w-full md:max-w-md rounded-t-2xl md:rounded-2xl p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
-            <h3 class="text-lg font-bold mb-4" id="upTitle">จัดการอุปกรณ์</h3>
+        <div class="bg-white w-full md:max-w-md rounded-t-3xl md:rounded-3xl p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-6 text-gray-800" id="upTitle">จัดการอุปกรณ์</h3>
             <form onsubmit="event.preventDefault(); submitUp();">
                 <input type="hidden" id="upMode">
-                <div class="space-y-4 mb-6">
+                <div class="space-y-5 mb-8">
                     <div>
-                        <label class="text-xs font-bold text-gray-500">รหัสอุปกรณ์ (ID)</label>
-                        <input type="text" id="upId" class="w-full mt-1 p-3 bg-gray-100 border rounded-xl text-gray-500 font-mono" readonly placeholder="สร้างอัตโนมัติ">
+                        <label class="text-base font-bold text-gray-600 mb-1 block">รหัสอุปกรณ์ (ID) <span class="text-red-500">*</span></label>
+                        <input type="text" id="upId" class="w-full p-4 bg-white border border-gray-300 rounded-xl text-xl font-bold text-gray-700 focus:border-schindler-red outline-none" required placeholder="เช่น TFS-001">
+                        <p class="text-sm text-gray-400 mt-1" id="upIdHint">แนะนำ: ID ถัดไปคือ...</p>
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-gray-500">ชื่ออุปกรณ์</label>
-                        <input type="text" id="upName" class="w-full mt-1 p-3 border rounded-xl outline-none focus:border-schindler-red" required>
+                        <label class="text-base font-bold text-gray-600 mb-1 block">ชื่ออุปกรณ์ <span class="text-red-500">*</span></label>
+                        <input type="text" id="upName" class="w-full p-4 border border-gray-300 rounded-xl text-lg focus:border-schindler-red outline-none" required>
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-gray-500">ลิงก์รูปภาพ (Google Drive)</label>
-                        <input type="text" id="upPhotoUrl" class="w-full mt-1 p-3 border rounded-xl outline-none focus:border-schindler-red text-sm" placeholder="วางลิงก์รูปภาพที่นี่">
+                        <label class="text-base font-bold text-gray-600 mb-1 block">หมวดหมู่</label>
+                        <select id="upType" class="w-full p-4 border border-gray-300 rounded-xl text-lg bg-white focus:border-schindler-red outline-none">
+                            <option value="General">ทั่วไป (General)</option>
+                            <option value="Power Tool">เครื่องมือไฟฟ้า</option>
+                            <option value="Measurement">เครื่องมือวัด</option>
+                            <option value="Safety">ความปลอดภัย</option>
+                            <option value="IT">อุปกรณ์ไอที</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-base font-bold text-gray-600 mb-1 block">ลิงก์รูปภาพ (Google Drive)</label>
+                        <input type="text" id="upPhotoUrl" class="w-full p-4 border border-gray-300 rounded-xl text-base focus:border-schindler-red outline-none" placeholder="วางลิงก์ที่นี่">
                     </div>
                 </div>
-                <div class="flex gap-3">
-                    <button type="button" onclick="closeM('upModal')" class="flex-1 py-3 bg-gray-100 rounded-xl font-bold text-gray-600">ยกเลิก</button>
-                    <button type="submit" class="flex-1 py-3 bg-schindler-red text-white rounded-xl font-bold shadow-lg">บันทึก</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="approveModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
-            <h3 class="text-lg font-bold text-center mb-2">ยืนยันการอนุมัติ?</h3>
-            <p id="apprItemName" class="text-center text-sm text-gray-500 mb-4">...</p>
-            
-            <form onsubmit="event.preventDefault(); submitApprove();">
-                <input type="hidden" id="apprId">
-                <input type="hidden" id="apprType">
-                
-                <div class="mb-4">
-                    <label class="text-xs font-bold text-gray-500 block mb-1">ลิงก์รูปหลักฐาน (ถ้ามี)</label>
-                    <input type="text" id="apprProofUrl" class="w-full p-3 border rounded-xl text-sm bg-gray-50 focus:border-schindler-red outline-none" placeholder="เช่น รูปสภาพของตอนคืน...">
-                </div>
-
-                <div class="flex gap-2">
-                    <button type="button" onclick="closeM('approveModal')" class="flex-1 py-2 bg-white border border-gray-300 rounded-lg text-gray-600 text-sm">ยกเลิก</button>
-                    <button type="submit" class="flex-1 py-2 bg-green-600 text-white rounded-lg font-bold text-sm shadow hover:bg-green-700">ยืนยันอนุมัติ</button>
+                <div class="flex gap-4">
+                    <button type="button" onclick="closeM('upModal')" class="flex-1 py-4 bg-gray-100 rounded-xl font-bold text-gray-600 text-lg hover:bg-gray-200">ยกเลิก</button>
+                    <button type="submit" class="flex-1 py-4 bg-schindler-red text-white rounded-xl font-bold text-lg shadow-lg">บันทึก</button>
                 </div>
             </form>
         </div>
     </div>
 
     <div id="loginModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-8 shadow-2xl text-center">
-            <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
-                <span class="material-icons text-white text-3xl">admin_panel_settings</span>
+        <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl text-center">
+            <div class="w-20 h-20 bg-black rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <span class="material-icons text-white text-4xl">admin_panel_settings</span>
             </div>
-            <h3 class="text-xl font-bold mb-6">เข้าสู่ระบบ Admin</h3>
+            <h3 class="text-2xl font-bold mb-6 text-gray-800">Admin Access</h3>
             <form onsubmit="event.preventDefault(); doLogin();">
-                <div class="relative mb-4">
-                    <input type="password" id="pass" class="w-full p-3 border rounded-xl text-center tracking-widest outline-none focus:border-schindler-red pr-10" placeholder="รหัสผ่าน" required>
-                    <button type="button" onclick="togglePass()" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
-                        <span class="material-icons" id="eyeIcon">visibility</span>
-                    </button>
+                <div class="relative mb-6">
+                    <input type="password" id="pass" class="w-full p-4 border-2 border-gray-200 rounded-xl text-center text-xl tracking-widest outline-none focus:border-schindler-red transition pr-12" placeholder="รหัสผ่าน" required>
+                    <button type="button" onclick="togglePass()" class="absolute right-3 top-4 text-gray-400 hover:text-gray-600 p-1"><span class="material-icons text-2xl" id="eyeIcon">visibility</span></button>
                 </div>
-                <button type="submit" class="w-full py-3 bg-schindler-red text-white rounded-xl font-bold shadow-lg hover:bg-red-700 transition">เข้าสู่ระบบ</button>
-                <button type="button" onclick="closeM('loginModal')" class="w-full mt-4 text-gray-400 text-xs hover:text-gray-600">ยกเลิก</button>
+                <button type="submit" class="w-full py-4 bg-schindler-red text-white rounded-xl font-bold text-lg shadow-xl hover:bg-red-700 transition active:scale-95">เข้าสู่ระบบ</button>
+                <button type="button" onclick="closeM('loginModal')" class="w-full mt-4 py-2 text-gray-400 text-base hover:text-gray-600">ยกเลิก</button>
             </form>
         </div>
     </div>
 
-    <div id="busy" class="hidden fixed inset-0 z-[100] bg-white/90 flex flex-col items-center justify-center backdrop-blur-sm">
-        <div class="spinner mb-4"></div>
-        <p class="text-sm font-bold text-gray-600 animate-pulse">กำลังบันทึกข้อมูล...</p>
+    <div id="approveModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+            <h3 class="text-xl font-bold text-center mb-2">ยืนยันการอนุมัติ?</h3>
+            <p id="apprItemName" class="text-center text-base text-gray-500 mb-6">...</p>
+            <form onsubmit="event.preventDefault(); submitApprove();">
+                <input type="hidden" id="apprId"><input type="hidden" id="apprType">
+                <div class="mb-6">
+                    <label class="text-base font-bold text-gray-600 block mb-2">ลิงก์รูปหลักฐาน (ถ้ามี)</label>
+                    <input type="text" id="apprProofUrl" class="w-full p-3 border rounded-xl text-base bg-gray-50 focus:border-schindler-red outline-none" placeholder="ลิงก์รูปภาพ...">
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeM('approveModal')" class="flex-1 py-3 bg-white border border-gray-300 rounded-xl text-gray-600 text-lg font-bold">ยกเลิก</button>
+                    <button type="submit" class="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold text-lg shadow">ยืนยัน</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="busy" class="hidden fixed inset-0 z-[100] bg-white/95 flex flex-col items-center justify-center backdrop-blur-sm">
+        <div class="spinner mb-6"></div>
+        <p class="text-xl font-bold text-gray-700 animate-pulse">กำลังบันทึกข้อมูล...</p>
     </div>
 
     <script>
@@ -232,7 +260,7 @@
                 render();
                 if(isAdmin) loadHistory(); 
             } catch(e) { 
-                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + e.message); 
+                showPopup('ข้อผิดพลาด', 'เชื่อมต่อระบบไม่ได้: ' + e.message, 'error'); 
             } finally { 
                 document.getElementById('loading').classList.add('hidden'); 
             }
@@ -255,9 +283,9 @@
                 if(json.status === 'success') {
                     await load();
                     return true;
-                } else throw new Error(json.message || 'Unknown Error');
+                } else throw new Error(json.message || 'เกิดข้อผิดพลาดไม่ทราบสาเหตุ');
             } catch(e) { 
-                alert('ทำรายการไม่สำเร็จ: ' + e.message); 
+                showPopup('ทำรายการไม่สำเร็จ', e.message, 'error'); 
                 return false; 
             } finally { 
                 document.getElementById('busy').classList.add('hidden'); 
@@ -282,7 +310,6 @@
         function render() {
             const grid = document.getElementById('grid');
             grid.innerHTML = '';
-            
             document.getElementById('cAvail').innerText = items.filter(x=>x.status==='available').length;
             document.getElementById('cBorrow').innerText = items.filter(x=>x.status!=='available').length;
 
@@ -297,53 +324,57 @@
             });
 
             if(list.length === 0) {
-                grid.innerHTML = `<div class="text-center py-10 text-gray-400 text-sm bg-white rounded-xl border border-dashed"><span class="material-icons mb-2">search_off</span><br>ไม่พบข้อมูล</div>`; 
+                grid.innerHTML = `<div class="text-center py-12 text-gray-400 text-lg bg-white rounded-3xl border-2 border-dashed"><span class="material-icons mb-2 text-4xl">search_off</span><br>ไม่พบข้อมูล</div>`; 
                 return;
             }
 
             list.forEach(x => {
                 const isAvail = x.status === 'available';
                 const isPending = x.status.includes('pending');
-                
-                // แปลสถานะเป็นไทย
                 let statusBadge = '';
-                if (isAvail) statusBadge = `<span class="px-2 py-0.5 rounded-md bg-green-100 text-green-700 text-[10px] font-bold border border-green-200">ว่าง</span>`;
-                else if (isPending) statusBadge = `<span class="px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 text-[10px] font-bold border border-blue-200">รออนุมัติ</span>`;
-                else statusBadge = `<span class="px-2 py-0.5 rounded-md bg-yellow-100 text-yellow-700 text-[10px] font-bold border border-yellow-200">ถูกยืม</span>`;
+                if (isAvail) statusBadge = `<span class="px-3 py-1 rounded-lg bg-green-100 text-green-700 text-sm font-bold border border-green-200">ว่าง</span>`;
+                else if (isPending) statusBadge = `<span class="px-3 py-1 rounded-lg bg-blue-100 text-blue-700 text-sm font-bold border border-blue-200">รออนุมัติ</span>`;
+                else statusBadge = `<span class="px-3 py-1 rounded-lg bg-yellow-100 text-yellow-700 text-sm font-bold border border-yellow-200">ถูกยืม</span>`;
 
                 let adminControls = '';
                 if(isAdmin) {
                     adminControls = `
-                    <div class="absolute top-2 right-2 flex gap-1 z-10">
-                        <button onclick="edit('${x.id}'); event.stopPropagation()" class="w-7 h-7 bg-white rounded-full text-blue-600 shadow border border-gray-100 flex items-center justify-center hover:bg-blue-50"><span class="material-icons text-sm">edit</span></button>
-                        <button onclick="del('${x.id}'); event.stopPropagation()" class="w-7 h-7 bg-white rounded-full text-red-600 shadow border border-gray-100 flex items-center justify-center hover:bg-red-50"><span class="material-icons text-sm">delete</span></button>
+                    <div class="absolute top-3 right-3 flex gap-2 z-10">
+                        <button onclick="edit('${x.id}'); event.stopPropagation()" class="w-10 h-10 bg-white rounded-full text-blue-600 shadow-md flex items-center justify-center hover:bg-blue-50"><span class="material-icons text-xl">edit</span></button>
+                        <button onclick="del('${x.id}'); event.stopPropagation()" class="w-10 h-10 bg-white rounded-full text-red-600 shadow-md flex items-center justify-center hover:bg-red-50"><span class="material-icons text-xl">delete</span></button>
                     </div>`;
                 }
 
                 const cleanUrl = getImgUrl(x.photoUrl);
                 const imgDisplay = cleanUrl 
-                    ? `<img src="${cleanUrl}" class="w-full h-full object-cover transition duration-300 group-hover:scale-110" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-gray-200 flex items-center justify-center\'><span class=\'material-icons text-gray-400\'>broken_image</span></div>'">` 
-                    : `<div class="w-full h-full bg-gray-200 flex items-center justify-center"><span class="material-icons text-gray-400">image</span></div>`;
+                    ? `<img src="${cleanUrl}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-gray-200 flex items-center justify-center\'><span class=\'material-icons text-gray-400 text-4xl\'>broken_image</span></div>'">` 
+                    : `<div class="w-full h-full bg-gray-200 flex items-center justify-center"><span class="material-icons text-gray-400 text-4xl">image</span></div>`;
+
+                // Display info extract from borrower string (ID - Name (Phone) [Note])
+                let borrowInfo = '';
+                if (!isAvail && x.borrower) {
+                    // Simple parser or just show string
+                    borrowInfo = `<div class="flex items-start text-sm text-gray-500 bg-gray-50 p-2 rounded-lg mt-2">
+                        <span class="material-icons text-base mr-1 mt-0.5">person</span> <span class="line-clamp-1">${x.borrower}</span>
+                    </div>`;
+                }
 
                 grid.innerHTML += `
-                    <div class="group bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex h-28 relative active:scale-95 transition-all duration-200 cursor-pointer hover:shadow-md" onclick="clk('${x.id}')">
+                    <div class="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex h-36 relative active:scale-98 transition-all duration-200 cursor-pointer hover:shadow-lg" onclick="clk('${x.id}')">
                         ${adminControls}
-                        <div class="w-28 bg-gray-100 flex-shrink-0 overflow-hidden relative">
+                        <div class="w-36 bg-gray-100 flex-shrink-0 overflow-hidden relative">
                             ${imgDisplay}
                             ${!isAvail ? '<div class="absolute inset-0 bg-black/10"></div>' : ''}
                         </div>
-                        <div class="flex-1 p-3 flex flex-col justify-between">
+                        <div class="flex-1 p-4 flex flex-col justify-between">
                             <div>
-                                <div class="flex justify-between items-start mb-1">
-                                    <span class="text-[10px] text-gray-400 font-mono tracking-wider">${x.id}</span>
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="text-xs text-gray-400 font-mono tracking-wider bg-gray-100 px-2 py-0.5 rounded">${x.id}</span>
                                     ${statusBadge}
                                 </div>
-                                <h4 class="font-bold text-sm text-gray-800 line-clamp-2 leading-tight">${x.name}</h4>
+                                <h4 class="font-bold text-lg text-gray-800 line-clamp-2 leading-tight">${x.name}</h4>
                             </div>
-                            ${!isAvail && x.borrower ? `
-                                <div class="flex items-center text-xs text-gray-500 bg-gray-50 p-1 rounded border border-gray-100 mt-1">
-                                    <span class="material-icons text-[12px] mr-1">person</span> ${x.borrower.split(' - ')[1] || x.borrower}
-                                </div>` : ''}
+                            ${borrowInfo}
                         </div>
                     </div>`;
             });
@@ -353,31 +384,27 @@
             const list = document.getElementById('reqList');
             list.innerHTML = '';
             const pending = items.filter(x=>x.status.includes('pending'));
-            
-            if(pending.length === 0) { 
-                document.getElementById('noReq').classList.remove('hidden'); 
-                return; 
-            }
+            if(pending.length === 0) { document.getElementById('noReq').classList.remove('hidden'); return; }
             document.getElementById('noReq').classList.add('hidden');
 
             pending.forEach(x => {
                 const isBorrow = x.status === 'pending_borrow';
                 const typeText = isBorrow ? 'ขอเบิก' : 'แจ้งคืน';
-                const typeColor = isBorrow ? 'text-blue-600 bg-blue-50' : 'text-purple-600 bg-purple-50';
+                const typeClass = isBorrow ? 'text-blue-600 bg-blue-50' : 'text-purple-600 bg-purple-50';
                 
                 list.innerHTML += `
-                    <div class="p-4 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition">
-                        <div class="flex justify-between mb-2">
-                            <span class="text-xs font-bold px-2 py-1 rounded ${typeColor}">${typeText}</span>
-                            <span class="text-xs text-gray-400 font-mono">${x.id}</span>
+                    <div class="p-5 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition">
+                        <div class="flex justify-between mb-3">
+                            <span class="text-sm font-bold px-3 py-1 rounded-lg ${typeClass}">${typeText}</span>
+                            <span class="text-sm text-gray-500 font-mono">${x.id}</span>
                         </div>
-                        <div class="font-bold text-sm text-gray-800 mb-1">${x.name}</div>
-                        <div class="text-xs text-gray-500 mb-3 flex items-center">
-                            <span class="material-icons text-[14px] mr-1">account_circle</span> ${x.borrower}
+                        <div class="font-bold text-lg text-gray-800 mb-2">${x.name}</div>
+                        <div class="text-base text-gray-600 mb-4 bg-gray-50 p-3 rounded-xl">
+                            <span class="material-icons text-base mr-1 align-text-bottom">account_circle</span> ${x.borrower}
                         </div>
-                        <div class="flex gap-2">
-                            <button onclick="openApprove('${x.id}','${isBorrow?'borrow':'return'}', '${x.name}')" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-2 rounded-lg font-bold shadow-sm transition">อนุมัติ</button>
-                            <button onclick="reject('${x.id}','${isBorrow?'borrow':'return'}')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs py-2 rounded-lg font-bold transition">ปฏิเสธ</button>
+                        <div class="flex gap-3">
+                            <button onclick="openApprove('${x.id}','${isBorrow?'borrow':'return'}', '${x.name}')" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-base py-3 rounded-xl font-bold shadow transition">อนุมัติ</button>
+                            <button onclick="reject('${x.id}','${isBorrow?'borrow':'return'}')" class="flex-1 bg-white border border-gray-300 text-gray-600 text-base py-3 rounded-xl font-bold hover:bg-gray-50 transition">ปฏิเสธ</button>
                         </div>
                     </div>`;
             });
@@ -386,91 +413,126 @@
         function renderHistory() {
             const list = document.getElementById('histList');
             list.innerHTML = '';
-            if(historyData.length === 0) { 
-                document.getElementById('noHist').classList.remove('hidden'); 
-                return; 
-            }
+            if(historyData.length === 0) { document.getElementById('noHist').classList.remove('hidden'); return; }
             document.getElementById('noHist').classList.add('hidden');
 
             historyData.forEach(h => {
                 const cleanProof = getImgUrl(h.proofUrl);
                 const hasLink = cleanProof && cleanProof.length > 5;
-                const linkBtn = hasLink ? `<a href="${cleanProof}" target="_blank" class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-[10px] font-bold hover:bg-blue-100 ml-auto flex items-center gap-1"><span class="material-icons text-[10px]">image</span>ดูรูป</a>` : '';
-                let actionColor = h.action === 'Approved Borrow' ? 'text-green-600' : 'text-purple-600';
+                const linkBtn = hasLink ? `<a href="${cleanProof}" target="_blank" class="text-blue-600 bg-blue-50 px-3 py-1 rounded-lg text-sm font-bold hover:bg-blue-100 ml-auto flex items-center gap-1"><span class="material-icons text-sm">image</span>ดูรูป</a>` : '';
+                let actionColor = h.action.includes('ยืม') ? 'text-green-600' : 'text-purple-600';
                 
                 list.innerHTML += `
-                    <div class="p-3 bg-white rounded-lg border border-gray-100 text-xs shadow-sm flex items-center justify-between">
-                        <div>
+                    <div class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                        <div class="flex-1 pr-2">
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="text-[10px] text-gray-400 bg-gray-100 px-1 rounded">${h.date.split('T')[0]}</span>
-                                <span class="font-bold ${actionColor}">${h.action}</span>
+                                <span class="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">${h.date.split(' ')[0]}</span>
+                                <span class="font-bold text-sm ${actionColor}">${h.action}</span>
                             </div>
-                            <div class="font-bold text-gray-800 text-sm">${h.name}</div>
-                            <div class="text-gray-500 mt-0.5">โดย: ${h.user}</div>
+                            <div class="font-bold text-gray-800 text-base line-clamp-1">${h.name}</div>
+                            <div class="text-gray-500 text-sm mt-1 line-clamp-1">โดย: ${h.user}</div>
                         </div>
                         ${linkBtn}
-                    </div>
-                `;
+                    </div>`;
             });
         }
 
         function clk(id) {
             if(isAdmin) return;
-            
             selItem = items.find(x => x.id === id);
-            
-            if(selItem.status.includes('pending')) { 
-                alert('รายการนี้กำลังรอการอนุมัติจาก Admin'); 
-                return; 
-            }
+            if(selItem.status.includes('pending')) { showPopup('แจ้งเตือน', 'รายการนี้รอการอนุมัติอยู่', 'warning'); return; }
 
             const isAvail = selItem.status === 'available';
-            
             document.getElementById('actTitle').innerText = isAvail ? 'ยืมอุปกรณ์' : 'คืนอุปกรณ์';
-            document.getElementById('actTitle').className = isAvail ? 'text-xl font-bold text-green-700' : 'text-xl font-bold text-purple-700';
-            
+            document.getElementById('actTitle').className = isAvail ? 'text-2xl font-bold text-green-700' : 'text-2xl font-bold text-purple-700';
             document.getElementById('actSub').innerText = `${selItem.id}: ${selItem.name}`;
+            
+            // Reset Fields
             document.getElementById('actEmpId').value = ''; 
             document.getElementById('actName').value = ''; 
-            
+            document.getElementById('actPhone').value = ''; 
+            document.getElementById('actNote').value = ''; 
+
             if(!isAvail && selItem.borrower) {
-                const parts = selItem.borrower.split(' - ');
-                if(parts.length > 1) {
-                    document.getElementById('actEmpId').value = parts[0];
-                    document.getElementById('actName').value = parts[1];
+                // Parse old data: "ID - Name (Phone) [Note: ...]"
+                // Simple regex or split
+                const regex = /^(\d+)\s-\s([^(]+)\s?\(?([^)]*)\)?\s?\[?Note:\s?(.*)\]?$/;
+                const match = selItem.borrower.match(regex);
+                if (match) {
+                    document.getElementById('actEmpId').value = match[1] || '';
+                    document.getElementById('actName').value = match[2].trim() || '';
+                    document.getElementById('actPhone').value = match[3] || '';
+                    // Note ไม่ต้อง restore ตอนคืนก็ได้ หรือจะใส่ก็ได้
                 } else {
                     document.getElementById('actName').value = selItem.borrower;
                 }
             }
-
             document.getElementById('actModal').classList.remove('hidden');
         }
 
         async function submitAct() {
             const empId = document.getElementById('actEmpId').value.trim();
             const name = document.getElementById('actName').value.trim();
+            const phone = document.getElementById('actPhone').value.trim();
+            const note = document.getElementById('actNote').value.trim();
             
-            // --- VALIDATION รหัสพนักงาน 6-12 หลัก ---
-            if(!/^\d{6,12}$/.test(empId)) { 
-                alert('รหัสพนักงานต้องเป็นตัวเลข 6-12 หลักเท่านั้น'); 
-                return; 
+            if(!/^\d{6,12}$/.test(empId)) { showPopup('ข้อมูลไม่ถูกต้อง', 'รหัสพนักงานต้องเป็นตัวเลข 6-12 หลัก', 'error'); return; }
+            if(!name) { showPopup('ข้อมูลไม่ถูกต้อง', 'กรุณาระบุชื่อ-นามสกุล', 'error'); return; }
+            if(!phone) { showPopup('ข้อมูลไม่ถูกต้อง', 'กรุณาระบุเบอร์โทรศัพท์', 'error'); return; }
+
+            // Format Data String
+            let userString = `${empId} - ${name} (${phone})`;
+            if(note) userString += ` [Note: ${note}]`;
+
+            const action = selItem.status === 'available' ? 'borrow_request' : 'return_request';
+            const success = await send({ action: action, id: selItem.id, user: userString });
+            if(success) {
+                closeM('actModal');
+                showPopup('สำเร็จ', 'ส่งคำขอเรียบร้อยแล้ว รอการอนุมัติ', 'success');
             }
-            if(!name) { alert('กรุณาระบุชื่อ-นามสกุล'); return; }
-
-            const fullName = `${empId} - ${name}`; // บันทึกแบบรวม
-
-            const isAvail = selItem.status === 'available';
-            const action = isAvail ? 'borrow_request' : 'return_request';
-
-            const success = await send({
-                action: action,
-                id: selItem.id,
-                user: fullName
-            });
-
-            if(success) closeM('actModal');
         }
 
+        // --- Custom Pop-up System ---
+        function showPopup(title, msg, type='info') {
+            const modal = document.getElementById('customAlert');
+            const iconBox = document.getElementById('alertIconBox');
+            const icon = document.getElementById('alertIcon');
+            const btns = document.getElementById('alertBtns');
+
+            document.getElementById('alertTitle').innerText = title;
+            document.getElementById('alertMsg').innerText = msg;
+            
+            // Theme Colors
+            if(type === 'success') {
+                iconBox.className = 'w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-green-100 text-green-600';
+                icon.innerText = 'check_circle';
+            } else if (type === 'error') {
+                iconBox.className = 'w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-red-100 text-red-600';
+                icon.innerText = 'error';
+            } else if (type === 'confirm') {
+                iconBox.className = 'w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-yellow-100 text-yellow-600';
+                icon.innerText = 'help';
+            } else {
+                iconBox.className = 'w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-gray-100 text-gray-600';
+                icon.innerText = 'info';
+            }
+
+            // Buttons
+            if(type === 'confirm') {
+                // ต้อง Assign function ภายนอกเองสำหรับ confirm
+                // ในที่นี้เราใช้ Alert ธรรมดาไปก่อน หรือจะประยุกต์ใช้ Promise ก็ได้
+                // เพื่อความง่าย เราจะใช้ confirm เดิมของ browser สำหรับ delete/reject ไปก่อนในบางจุด
+                // ส่วนจุดสำคัญใช้ popup นี้
+            } else {
+                btns.innerHTML = `<button onclick="closeAlert()" class="flex-1 py-3 bg-gray-800 text-white rounded-xl font-bold text-lg shadow-lg active:scale-95 transition">ตกลง</button>`;
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeAlert() { document.getElementById('customAlert').classList.add('hidden'); }
+
+        // --- Admin & CRUD ---
         function toggleAdmin() {
             if(isAdmin) {
                 isAdmin = false;
@@ -487,9 +549,7 @@
         }
 
         function doLogin() {
-            const p = document.getElementById('pass').value;
-            // ตั้งรหัสผ่าน Admin
-            if(p === '1234' || p === 'admin' || p === 'jiraphong2227') { 
+            if(document.getElementById('pass').value === 'jiraphong2227') { 
                 isAdmin = true;
                 closeM('loginModal');
                 document.getElementById('adminPanel').classList.remove('hidden');
@@ -499,29 +559,23 @@
                 document.getElementById('adminBtn').classList.add('bg-red-600'); 
                 render();
                 loadHistory(); 
-            } else {
-                alert('รหัสผ่านไม่ถูกต้อง');
-            }
-        }
-
-        function togglePass() {
-            const input = document.getElementById('pass');
-            const icon = document.getElementById('eyeIcon');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.innerText = 'visibility_off';
-            } else {
-                input.type = 'password';
-                icon.innerText = 'visibility';
-            }
+            } else showPopup('ผิดพลาด', 'รหัสผ่านไม่ถูกต้อง', 'error');
         }
 
         function openUpsert() {
             document.getElementById('upMode').value = 'create';
             document.getElementById('upTitle').innerText = 'เพิ่มอุปกรณ์ใหม่';
+            // Auto Suggest ID
             const nums = items.map(x => parseInt(x.id.replace(/\D/g,'')) || 0);
             const next = nums.length ? Math.max(...nums)+1 : 1;
-            document.getElementById('upId').value = `TFS-${String(next).padStart(3,'0')}`;
+            const nextId = `TFS-${String(next).padStart(3,'0')}`;
+            
+            const idInput = document.getElementById('upId');
+            idInput.value = ''; 
+            idInput.placeholder = nextId; // Show as placeholder suggestion
+            idInput.readOnly = false; // Allow Edit
+
+            document.getElementById('upIdHint').innerText = `แนะนำ: ID ถัดไปคือ ${nextId}`;
             document.getElementById('upName').value = '';
             document.getElementById('upPhotoUrl').value = '';
             document.getElementById('upModal').classList.remove('hidden');
@@ -532,6 +586,8 @@
             document.getElementById('upMode').value = 'update';
             document.getElementById('upTitle').innerText = 'แก้ไขข้อมูล';
             document.getElementById('upId').value = item.id;
+            document.getElementById('upId').readOnly = true; // Edit mode cannot change ID
+            document.getElementById('upIdHint').innerText = '';
             document.getElementById('upName').value = item.name;
             document.getElementById('upPhotoUrl').value = item.photoUrl || '';
             document.getElementById('upModal').classList.remove('hidden');
@@ -539,19 +595,29 @@
 
         async function submitUp() {
             const mode = document.getElementById('upMode').value;
-            const payload = {
+            const id = document.getElementById('upId').value.trim() || document.getElementById('upId').placeholder;
+            
+            // Check Duplicate ID (Frontend Check)
+            if (mode === 'create' && items.some(x => x.id === id)) {
+                showPopup('ข้อมูลซ้ำ', `รหัสอุปกรณ์ ${id} มีอยู่ในระบบแล้ว`, 'error');
+                return;
+            }
+
+            const success = await send({
                 action: mode,
-                id: document.getElementById('upId').value,
+                id: id,
                 name: document.getElementById('upName').value,
-                type: 'General', 
+                type: document.getElementById('upType').value,
                 photoUrl: document.getElementById('upPhotoUrl').value
-            };
-            const success = await send(payload);
+            });
             if(success) closeM('upModal');
         }
 
-        async function del(id) { if(confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) await send({ action: 'delete', id: id }); }
+        async function del(id) { 
+            if(confirm('ยืนยันที่จะลบอุปกรณ์นี้ออกจากระบบ?')) await send({ action: 'delete', id: id }); 
+        }
 
+        // --- Approve / Reject ---
         function openApprove(id, type, name) {
             document.getElementById('apprId').value = id;
             document.getElementById('apprType').value = type;
@@ -566,21 +632,27 @@
                 id: document.getElementById('apprId').value,
                 proofUrl: document.getElementById('apprProofUrl').value
             });
-            if(success) closeM('approveModal');
+            if(success) { closeM('approveModal'); showPopup('สำเร็จ', 'อนุมัติรายการเรียบร้อย', 'success'); }
         }
 
         async function reject(id, type) {
-            if(!confirm('ปฏิเสธคำขอนี้?')) return;
-            await send({ action: type === 'borrow' ? 'reject_borrow' : 'reject_return', id: id });
+            if(confirm('ยืนยันปฏิเสธคำขอนี้?')) await send({ action: type === 'borrow' ? 'reject_borrow' : 'reject_return', id: id });
         }
 
+        // --- Utils ---
         function closeM(id) { document.getElementById(id).classList.add('hidden'); }
         function setFilter(f) {
             filter = f;
-            ['btnAll','btnAvail','btnBorrow'].forEach(b => document.getElementById(b).className = 'flex-1 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 transition');
+            ['btnAll','btnAvail','btnBorrow'].forEach(b => document.getElementById(b).className = 'flex-1 py-2.5 rounded-xl text-base font-bold bg-gray-100 text-gray-600 transition');
             const active = f==='all'?'btnAll':(f==='available'?'btnAvail':'btnBorrow');
-            document.getElementById(active).className = 'flex-1 py-1.5 rounded-lg text-xs font-bold bg-gray-800 text-white transition shadow-md transform scale-105';
+            document.getElementById(active).className = 'flex-1 py-2.5 rounded-xl text-base font-bold bg-gray-800 text-white transition shadow-md transform scale-105';
             render();
+        }
+        function togglePass() {
+            const i = document.getElementById('pass');
+            const ico = document.getElementById('eyeIcon');
+            if(i.type==='password') { i.type='text'; ico.innerText='visibility_off'; }
+            else { i.type='password'; ico.innerText='visibility'; }
         }
         function switchTab(tab) {
             if(tab === 'requests') {
