@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="th" class="h-full">
 <head>
@@ -120,7 +121,7 @@
             
             <form onsubmit="event.preventDefault(); submitAct();">
                 <div id="nameField" class="mb-6">
-                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wide">ผู้ทำรายการ</label>
+                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wide">ชื่อผู้ทำรายการ</label>
                     <input type="text" id="actName" class="w-full mt-2 p-3 border border-gray-300 rounded-xl bg-gray-50 outline-none focus:border-schindler-red focus:ring-1 focus:ring-schindler-red transition" placeholder="ระบุชื่อของคุณ (ภาษาไทย/อังกฤษ)" required>
                 </div>
                 <div class="flex gap-3">
@@ -148,7 +149,7 @@
                     <div>
                         <label class="text-xs font-bold text-gray-500">ลิงก์รูปภาพ (Google Drive)</label>
                         <input type="text" id="upPhotoUrl" class="w-full mt-1 p-3 border rounded-xl outline-none focus:border-schindler-red text-sm" placeholder="วางลิงก์ Google Drive ที่นี่">
-                        <p class="text-[10px] text-gray-400 mt-1">* รองรับลิงก์แชร์ Google Drive ปกติ ระบบจะแปลงให้อัตโนมัติ</p>
+                        <p class="text-[10px] text-gray-400 mt-1">* รูปนี้จะแสดงเป็นรูปประจำอุปกรณ์</p>
                     </div>
                 </div>
                 <div class="flex gap-3">
@@ -170,7 +171,8 @@
                 
                 <div class="mb-4">
                     <label class="text-xs font-bold text-gray-500 block mb-1">ลิงก์รูปหลักฐาน (ถ้ามี)</label>
-                    <input type="text" id="apprProofUrl" class="w-full p-3 border rounded-xl text-sm bg-gray-50 focus:border-schindler-red outline-none" placeholder="เช่น รูปสภาพของตอนคืน...">
+                    <input type="text" id="apprProofUrl" class="w-full p-3 border rounded-xl text-sm bg-gray-50 focus:border-schindler-red outline-none" placeholder="เช่น ลิงก์รูปสภาพของตอนคืน...">
+                    <p class="text-[10px] text-gray-400 mt-1">* ลิงก์นี้จะถูกบันทึกในประวัติ (History)</p>
                 </div>
 
                 <div class="flex gap-2">
@@ -202,9 +204,10 @@
 
     <script>
         // ------------------------------------------
-        // ตั้งค่า URL ของ Web App Script (Google Apps Script)
+        // ใส่ URL Web App อันใหม่ที่นี่
         // ------------------------------------------
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyqtpApEqn4t_IsLyc1nw8dW4VP_RTpgm0tothcfk8s3ojo3WBNuFN9MCO75yYPbzy9/exec'; 
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyB6yvEhg_Ikv8w8pj28FXYhFKu2TuM1jWjKlck2NeaTYZUeV9m9TSceK2Of4gyXq_x/exec'; 
+        // ------------------------------------------
         
         let items = [], historyData = [], filter = 'all', isAdmin = false, selItem = null;
 
@@ -261,10 +264,14 @@
         // --- Helper: แปลง Google Drive Link เป็นรูปภาพ ---
         function getImgUrl(url) {
             if (!url) return '';
-            // ถ้าเป็นลิงก์ Google Drive
+            // ถ้าเป็นลิงก์ Google Drive แบบแชร์ (drive.google.com/file/d/XXX/view)
             if (url.includes('drive.google.com')) {
-                const idMatch = url.match(/[-\w]{25,}/);
-                if (idMatch) return `https://drive.google.com/uc?export=view&id=${idMatch[0]}`;
+                // ดึง ID ออกมา (ยาวๆ ประมาณ 33 ตัวอักษร)
+                const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]{25,})/);
+                if (idMatch && idMatch[1]) {
+                    // แปลงเป็น Direct Link
+                    return `https://drive.google.com/uc?export=view&id=${idMatch[1]}`;
+                }
             }
             return url;
         }
@@ -315,7 +322,7 @@
                     </div>`;
                 }
 
-                // Image Handling
+                // Image Handling (ใช้ฟังก์ชันแปลงลิงก์)
                 const cleanUrl = getImgUrl(x.photoUrl);
                 const imgDisplay = cleanUrl 
                     ? `<img src="${cleanUrl}" class="w-full h-full object-cover transition duration-300 group-hover:scale-110" onerror="this.src='https://via.placeholder.com/100?text=No+Img'">` 
@@ -392,7 +399,7 @@
             historyData.forEach(h => {
                 const cleanProof = getImgUrl(h.proofUrl);
                 const hasLink = cleanProof && cleanProof.length > 5;
-                const linkBtn = hasLink ? `<a href="${cleanProof}" target="_blank" class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-[10px] font-bold hover:bg-blue-100 ml-auto">ดูรูป</a>` : '';
+                const linkBtn = hasLink ? `<a href="${cleanProof}" target="_blank" class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-[10px] font-bold hover:bg-blue-100 ml-auto flex items-center gap-1"><span class="material-icons text-[10px]">image</span>ดูรูป</a>` : '';
                 
                 let actionColor = h.action === 'Approved Borrow' ? 'text-green-600' : 'text-purple-600';
                 
@@ -418,7 +425,6 @@
             
             selItem = items.find(x => x.id === id);
             
-            // ถ้ากำลังรออนุมัติ ห้ามกดซ้ำ
             if(selItem.status.includes('pending')) { 
                 alert('รายการนี้กำลังรอการอนุมัติจาก Admin'); 
                 return; 
@@ -426,14 +432,14 @@
 
             const isAvail = selItem.status === 'available';
             
-            // ตั้งค่า Modal
-            document.getElementById('actTitle').innerText = isAvail ? 'ยืมอุปกรณ์ (Borrow)' : 'คืนอุปกรณ์ (Return)';
-            document.getElementById('actTitle').className = isAvail ? 'text-xl font-bold text-green-700' : 'text-xl font-bold text-purple-700';
+            document.getElementById('actTitle').innerText = isAvail ? 'ยืมอุปกรณ์' : 'คืนอุปกรณ์';
+            
+document.getElementById('actTitle').className = isAvail ? 'text-xl font-bold text-green-700' : 'text-xl font-bold text-purple-700';
             
             document.getElementById('actSub').innerText = `${selItem.id}: ${selItem.name}`;
-            document.getElementById('actName').value = ''; // Reset input
+            document.getElementById('actName').value = ''; 
             
-            // ถ้าเป็นการคืน ให้ใส่ชื่อคนยืมเดิมให้อัตโนมัติ (ถ้ามีข้อมูล)
+            // ถ้าคืน ใส่ชื่อคนยืมเดิมให้
             if(!isAvail && selItem.borrower) {
                 document.getElementById('actName').value = selItem.borrower;
             }
@@ -477,8 +483,8 @@
 
         function doLogin() {
             const p = document.getElementById('pass').value;
-            // ********** PASSWORD ง่ายๆ แก้ตรงนี้ **********
-            if(p === '1234' || p === 'admin') { 
+            // ********** แก้รหัสผ่านตรงนี้ **********
+            if(p === '1234' || p === 'admin' || p === 'jiraphong2227') { 
                 isAdmin = true;
                 closeM('loginModal');
                 
@@ -486,12 +492,11 @@
                 document.getElementById('addBtn').classList.remove('hidden');
                 document.getElementById('userStats').classList.add('hidden');
                 
-                // Change Icon Color
                 document.getElementById('adminBtn').classList.remove('bg-gray-800');
-                document.getElementById('adminBtn').classList.add('bg-red-600'); // Active State
+                document.getElementById('adminBtn').classList.add('bg-red-600'); 
 
                 render();
-                loadHistory(); // Load data เพิ่มเติม
+                loadHistory(); 
             } else {
                 alert('รหัสผ่านไม่ถูกต้อง');
             }
@@ -499,9 +504,14 @@
 
         // --- CRUD Item ---
         function openUpsert() {
-            document.getElementById('upMode').value = 'add';
+            document.getElementById('upMode').value = 'create';
             document.getElementById('upTitle').innerText = 'เพิ่มอุปกรณ์ใหม่';
-            document.getElementById('upId').value = 'Auto Generated';
+            
+            // Auto ID Calculation (TFS-XXX)
+            const nums = items.map(x => parseInt(x.id.replace(/\D/g,'')) || 0);
+            const next = nums.length ? Math.max(...nums)+1 : 1;
+            document.getElementById('upId').value = `TFS-${String(next).padStart(3,'0')}`;
+            
             document.getElementById('upName').value = '';
             document.getElementById('upPhotoUrl').value = '';
             document.getElementById('upModal').classList.remove('hidden');
@@ -509,7 +519,7 @@
 
         function edit(id) {
             const item = items.find(x=>x.id===id);
-            document.getElementById('upMode').value = 'edit';
+            document.getElementById('upMode').value = 'update';
             document.getElementById('upTitle').innerText = 'แก้ไขข้อมูล';
             document.getElementById('upId').value = item.id;
             document.getElementById('upName').value = item.name;
@@ -520,10 +530,10 @@
         async function submitUp() {
             const mode = document.getElementById('upMode').value;
             const payload = {
-                action: mode === 'add' ? 'create' : 'update',
+                action: mode,
                 id: document.getElementById('upId').value,
                 name: document.getElementById('upName').value,
-                type: 'General', // Default
+                type: 'General', 
                 photoUrl: document.getElementById('upPhotoUrl').value
             };
             
@@ -547,7 +557,7 @@
 
         async function submitApprove() {
             const id = document.getElementById('apprId').value;
-            const type = document.getElementById('apprType').value; // 'borrow' or 'return'
+            const type = document.getElementById('apprType').value; 
             const proof = document.getElementById('apprProofUrl').value;
 
             const success = await send({
@@ -574,7 +584,6 @@
 
         function setFilter(f) {
             filter = f;
-            // Update Buttons logic
             ['btnAll','btnAvail','btnBorrow'].forEach(b => {
                 document.getElementById(b).className = 'flex-1 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 transition';
             });
