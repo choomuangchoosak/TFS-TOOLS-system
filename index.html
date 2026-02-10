@@ -1,5 +1,4 @@
 
-
 <!doctype html>
 <html lang="th" class="h-full">
 <head>
@@ -24,11 +23,11 @@
     </script>
     <style>
         body { background-color: #F3F4F6; -webkit-tap-highlight-color: transparent; }
-        .btn-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s; }
-        .btn-icon:active { transform: scale(0.95); }
-        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        /* ปรับปุ่มให้กลมสวย ไม่บี้แบน */
+        .btn-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+        .btn-icon:active { transform: scale(0.95); background-color: #374151; }
         
-        /* Loading Spinner */
+        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
         .spinner { border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid #E2001A; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -42,10 +41,10 @@
                 <p class="text-[10px] text-gray-400 uppercase tracking-widest">TFS Equipment</p>
             </div>
             <div class="flex gap-3">
-                <button onclick="openHelp()" class="btn-icon bg-gray-800 hover:bg-gray-700">
+                <button onclick="openHelp()" class="btn-icon bg-gray-800 hover:bg-gray-700 transition">
                     <span class="material-icons text-white">help_outline</span>
                 </button>
-                <button onclick="toggleAdmin()" class="btn-icon bg-gray-800 hover:bg-gray-700">
+                <button onclick="toggleAdmin()" class="btn-icon bg-gray-800 hover:bg-gray-700 transition">
                     <span class="material-icons text-white" id="adminIcon">admin_panel_settings</span>
                 </button>
             </div>
@@ -114,7 +113,7 @@
     </button>
 
     <div id="actionModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end md:items-center justify-center">
-        <div class="bg-white w-full md:max-w-md rounded-t-2xl md:rounded-2xl p-6 animate-slide-up">
+        <div class="bg-white w-full md:max-w-md rounded-t-2xl md:rounded-2xl p-6 animate-slide-up max-h-[90vh] overflow-y-auto">
             <h3 class="text-xl font-bold mb-1" id="actTitle">Title</h3>
             <p class="text-xs text-gray-500 mb-4 bg-gray-100 p-2 rounded" id="actSub">Detail</p>
             
@@ -244,14 +243,14 @@
     <div id="busyOverlay" class="fixed inset-0 z-[100] bg-white/90 flex flex-col items-center justify-center hidden">
         <div class="spinner border-t-schindler-red mb-3"></div>
         <p class="text-sm font-bold text-gray-600 animate-pulse">กำลังบันทึกข้อมูล...</p>
-        <p class="text-xs text-gray-400 mt-1">กรุณารอสักครู่ (อาจใช้เวลาอัปโหลดรูป)</p>
+        <p class="text-xs text-gray-400 mt-1">กำลังย่อรูปและอัปโหลด กรุณารอสักครู่</p>
     </div>
 
     <script>
         // ==========================================
-        // 🔧 ตั้งค่า URL (สำคัญมาก!)
+        // 🔧 ตั้งค่า URL (สำคัญมาก!) ใส่ URL Web App ใหม่ของคุณที่นี่
         // ==========================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyqvw1_LfK1S2VOdcgK4Mb4-DKu8TwbJ8zMjjoegOnDFkYXKl37EDIdbsq-LHIc3Pzh/exec'; // << เอา URL ใหม่มาใส่
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzIFzCuFE-WTS8kRnyvz8DaqNMbexgTxO2MIWBzT3ipYJxUOtzm2yVQn95kqhqdo4Hl/exec'; 
         const ADMIN_CODE = 'jiraphong2227';
         // ==========================================
 
@@ -267,7 +266,7 @@
         async function loadData() {
             document.getElementById('loadingState').classList.remove('hidden');
             try {
-                // ใช้ POST เสมอเพื่อเลี่ยงปัญหา GET Cache และ Parameter ยาว
+                // ส่งแบบ POST เพื่อเลี่ยง Cache
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     body: JSON.stringify({ action: 'read' })
@@ -289,11 +288,10 @@
         async function postData(payload) {
             document.getElementById('busyOverlay').classList.remove('hidden');
             try {
+                // Payload จะเป็น JSON string
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     body: JSON.stringify(payload)
-                    // ไม่ใส่ headers Content-Type เพื่อให้ browser จัดการ (ป้องกัน preflight ในบางกรณี)
-                    // แต่ GAS รับ text/plain ได้ดีที่สุด
                 });
                 const data = await res.json();
                 
@@ -325,6 +323,7 @@
 
             // Admin Requests
             if (isAdmin) renderAdminRequests();
+
             // Filter
             const term = document.getElementById('searchInput').value.toLowerCase();
             const filtered = items.filter(x => {
@@ -425,7 +424,7 @@
 
         // --- Interaction ---
         function clickItem(id) {
-            if (isAdmin) return; // Admin กดเพื่อแก้ไขไม่ได้ (ต้องกดปุ่มดินสอ)
+            if (isAdmin) return; 
             const item = items.find(x => x.id === id);
             selectedItem = item;
 
@@ -434,7 +433,6 @@
                 return;
             }
 
-            // Setup Modal
             document.getElementById('actName').value = '';
             clearImage('act');
             
@@ -451,7 +449,8 @@
                 nameInp.required = true;
             } else {
                 title.innerText = 'คืนอุปกรณ์';
-                grp.classList.add('hidden');
+                
+grp.classList.add('hidden');
                 nameInp.required = false;
             }
 
@@ -461,7 +460,8 @@
         async function submitAction() {
             closeModal('actionModal');
             const type = selectedItem.status === 'available' ? 'borrow' : 'return';
-            const imgData = await getBase64('actFile');
+            // ใช้ getCompressedBase64 แทน getBase64 ธรรมดา
+            const imgData = await getCompressedBase64('actFile');
 
             await postData({
                 action: type,
@@ -478,7 +478,8 @@
                 isAdmin = false;
                 document.getElementById('addBtn').classList.add('hidden');
                 document.getElementById('adminPanel').classList.add('hidden');
-                document.getElementById('adminIcon').innerText = 'admin_panel_settings';
+                // เปลี่ยนสีกลับ
+                document.getElementById('adminIcon').parentElement.classList.remove('bg-schindler-red');
                 render();
             } else {
                 openModal('loginModal');
@@ -491,7 +492,8 @@
                 isAdmin = true;
                 closeModal('loginModal');
                 document.getElementById('addBtn').classList.remove('hidden');
-                document.getElementById('adminIcon').innerText = 'logout';
+                // เปลี่ยนสีปุ่มให้รู้ว่า Login อยู่
+                document.getElementById('adminIcon').parentElement.classList.add('bg-schindler-red');
                 document.getElementById('loginPass').value = '';
                 render();
             } else {
@@ -500,13 +502,11 @@
         }
 
         function openUpsert() {
-            // Add Mode
             document.getElementById('upTitle').innerText = 'เพิ่มอุปกรณ์ใหม่';
             document.getElementById('upMode').value = 'add';
             document.getElementById('upName').value = '';
             clearImage('up');
             
-            // Auto ID
             const maxId = items.reduce((max, x) => {
                 const num = parseInt(x.id.replace('TFS-', '')) || 0;
                 return Math.max(max, num);
@@ -523,13 +523,13 @@
             document.getElementById('upId').value = item.id;
             document.getElementById('upName').value = item.name;
             document.getElementById('upType').value = item.type;
-            clearImage('up'); // Reset image input (user upload new only if change)
+            clearImage('up'); 
             openModal('upsertModal');
         }
 
         async function submitUpsert() {
             closeModal('upsertModal');
-            const imgData = await getBase64('upFile');
+            const imgData = await getCompressedBase64('upFile');
             
             await postData({
                 action: document.getElementById('upMode').value,
@@ -557,7 +557,8 @@
             }
         }
 
-        // --- Utilities ---
+        // --- Utilities & Helper Functions ---
+        
         function filter(type) {
             filterType = type;
             ['btnAll', 'btnAvail', 'btnBorrow'].forEach(id => {
@@ -586,15 +587,40 @@
             document.getElementById(prefix + 'Preview').src = '';
         }
 
-        function getBase64(inputId) {
+        // --- ฟังก์ชันย่อรูป (สำคัญมาก!) ---
+        function getCompressedBase64(inputId) {
             const input = document.getElementById(inputId);
             if (!input.files || !input.files[0]) return Promise.resolve(null);
             
+            const file = input.files[0];
+            const maxWidth = 800; // กำหนดความกว้างสูงสุด 800px (ลดขนาดไฟล์ได้เยอะมาก)
+            
             return new Promise((resolve) => {
-                const file = input.files[0];
                 const reader = new FileReader();
-                reader.onload = () => resolve({ name: file.name, data: reader.result });
                 reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // แปลงเป็น JPEG คุณภาพ 0.7
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        resolve({ name: file.name, data: dataUrl });
+                    };
+                };
             });
         }
 
