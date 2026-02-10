@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Schindler TFS Equipment</title>
+    <title>ระบบยืม-คืนอุปกรณ์ TFS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -37,7 +37,7 @@
         <div class="max-w-lg mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex-1 min-w-0 pr-2">
                 <h1 class="text-xl font-bold truncate tracking-wide">Schindler</h1>
-                <p class="text-[10px] text-gray-400 uppercase tracking-widest truncate">TFS Equipment System</p>
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest truncate">ระบบยืม-คืนอุปกรณ์ TFS</p>
             </div>
             <div class="flex gap-2 flex-shrink-0">
                 <button onclick="toggleAdmin()" class="btn-circle bg-gray-800 hover:bg-gray-700 transition active:scale-95" id="adminBtn">
@@ -74,14 +74,14 @@
             <div id="userStats" class="grid grid-cols-2 gap-3">
                 <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-green-500 flex justify-between items-center">
                     <div>
-                        <span class="text-xs text-gray-400 font-bold uppercase">Available</span>
+                        <span class="text-xs text-gray-400 font-bold uppercase">ว่าง (พร้อมใช้)</span>
                         <div class="text-2xl font-bold text-green-600 mt-1" id="cAvail">0</div>
                     </div>
                     <span class="material-icons text-green-100 text-4xl">check_circle</span>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-yellow-500 flex justify-between items-center">
                     <div>
-                        <span class="text-xs text-gray-400 font-bold uppercase">Borrowed</span>
+                        <span class="text-xs text-gray-400 font-bold uppercase">ถูกยืม</span>
                         <div class="text-2xl font-bold text-yellow-600 mt-1" id="cBorrow">0</div>
                     </div>
                     <span class="material-icons text-yellow-100 text-4xl">pending</span>
@@ -116,14 +116,14 @@
     <div id="actModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center transition-opacity">
         <div class="bg-white w-full md:max-w-md rounded-t-2xl md:rounded-2xl p-6 shadow-2xl animate-slide-up">
             <div class="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4 md:hidden"></div>
-            <h3 class="text-xl font-bold text-gray-800" id="actTitle">Title</h3>
+            <h3 class="text-xl font-bold text-gray-800" id="actTitle">หัวข้อ</h3>
             <p class="text-sm text-gray-500 mb-6" id="actSub">รายละเอียดอุปกรณ์</p>
             
             <form onsubmit="event.preventDefault(); submitAct();">
                 <div class="space-y-4 mb-6">
                     <div>
                         <label class="text-xs font-bold text-gray-500 uppercase tracking-wide">รหัสพนักงาน (6-12 หลัก)</label>
-                        <input type="tel" id="actEmpId" class="w-full mt-1 p-3 border border-gray-300 rounded-xl bg-gray-50 outline-none focus:border-schindler-red focus:ring-1 focus:ring-schindler-red transition font-mono text-lg" placeholder="123456" maxlength="12" pattern="\d*" inputmode="numeric" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        <input type="tel" id="actEmpId" class="w-full mt-1 p-3 border border-gray-300 rounded-xl bg-gray-50 outline-none focus:border-schindler-red focus:ring-1 focus:ring-schindler-red transition font-mono text-lg" placeholder="ตัวอย่าง: 123456" maxlength="12" pattern="\d*" inputmode="numeric" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     </div>
                     <div>
                         <label class="text-xs font-bold text-gray-500 uppercase tracking-wide">ชื่อ-นามสกุล</label>
@@ -146,7 +146,7 @@
                 <div class="space-y-4 mb-6">
                     <div>
                         <label class="text-xs font-bold text-gray-500">รหัสอุปกรณ์ (ID)</label>
-                        <input type="text" id="upId" class="w-full mt-1 p-3 bg-gray-100 border rounded-xl text-gray-500 font-mono" readonly placeholder="Auto Generated">
+                        <input type="text" id="upId" class="w-full mt-1 p-3 bg-gray-100 border rounded-xl text-gray-500 font-mono" readonly placeholder="สร้างอัตโนมัติ">
                     </div>
                     <div>
                         <label class="text-xs font-bold text-gray-500">ชื่ออุปกรณ์</label>
@@ -154,8 +154,7 @@
                     </div>
                     <div>
                         <label class="text-xs font-bold text-gray-500">ลิงก์รูปภาพ (Google Drive)</label>
-                        <input type="text" id="upPhotoUrl" class="w-full mt-1 p-3 border rounded-xl outline-none focus:border-schindler-red text-sm" placeholder="วางลิงก์ Google Drive ที่นี่">
-                        <p class="text-[10px] text-gray-400 mt-1">* รูปนี้จะแสดงเป็นรูปประจำอุปกรณ์</p>
+                        <input type="text" id="upPhotoUrl" class="w-full mt-1 p-3 border rounded-xl outline-none focus:border-schindler-red text-sm" placeholder="วางลิงก์รูปภาพที่นี่">
                     </div>
                 </div>
                 <div class="flex gap-3">
@@ -193,11 +192,16 @@
             <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
                 <span class="material-icons text-white text-3xl">admin_panel_settings</span>
             </div>
-            <h3 class="text-xl font-bold mb-6">Admin Access</h3>
+            <h3 class="text-xl font-bold mb-6">เข้าสู่ระบบ Admin</h3>
             <form onsubmit="event.preventDefault(); doLogin();">
-                <input type="password" id="pass" class="w-full p-3 border rounded-xl text-center tracking-widest outline-none focus:border-schindler-red mb-4" placeholder="Enter Password" required>
-                <button type="submit" class="w-full py-3 bg-schindler-red text-white rounded-xl font-bold shadow-lg hover:bg-red-700 transition">Login</button>
-                <button type="button" onclick="closeM('loginModal')" class="w-full mt-4 text-gray-400 text-xs hover:text-gray-600">Cancel</button>
+                <div class="relative mb-4">
+                    <input type="password" id="pass" class="w-full p-3 border rounded-xl text-center tracking-widest outline-none focus:border-schindler-red pr-10" placeholder="รหัสผ่าน" required>
+                    <button type="button" onclick="togglePass()" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
+                        <span class="material-icons" id="eyeIcon">visibility</span>
+                    </button>
+                </div>
+                <button type="submit" class="w-full py-3 bg-schindler-red text-white rounded-xl font-bold shadow-lg hover:bg-red-700 transition">เข้าสู่ระบบ</button>
+                <button type="button" onclick="closeM('loginModal')" class="w-full mt-4 text-gray-400 text-xs hover:text-gray-600">ยกเลิก</button>
             </form>
         </div>
     </div>
@@ -209,7 +213,7 @@
 
     <script>
         // ==========================================
-        // 🚨 สำคัญมาก: ใส่ URL Web App ที่ Deploy ล่าสุด !! 🚨
+        // 🚨 ใส่ URL Web App ที่ Deploy ล่าสุด !! 🚨
         // ==========================================
         const API_URL = 'https://script.google.com/macros/s/AKfycbwB5Nc88A5HVJ74EWI5dvyMURCIGvYi43PwVWCuAucNMClSd2d7SIDYgAfhvigrH8LS/exec'; 
         // ==========================================
@@ -228,7 +232,7 @@
                 render();
                 if(isAdmin) loadHistory(); 
             } catch(e) { 
-                alert('Connection Error: ' + e.message + '\n\nกรุณาตรวจสอบ URL ในโค้ด'); 
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + e.message); 
             } finally { 
                 document.getElementById('loading').classList.add('hidden'); 
             }
@@ -251,11 +255,9 @@
                 if(json.status === 'success') {
                     await load();
                     return true;
-                } else {
-                    throw new Error(json.message || 'Unknown Error');
-                }
+                } else throw new Error(json.message || 'Unknown Error');
             } catch(e) { 
-                alert('Failed: ' + e.message); 
+                alert('ทำรายการไม่สำเร็จ: ' + e.message); 
                 return false; 
             } finally { 
                 document.getElementById('busy').classList.add('hidden'); 
@@ -272,7 +274,7 @@
                     const match2 = url.match(/id=([a-zA-Z0-9_-]+)/);
                     if (match2) id = match2[1];
                 }
-                if (id) return `https://lh3.googleusercontent.com/d/${id}`; // แก้ไข Thumbnail link
+                if (id) return `https://lh3.googleusercontent.com/d/${id}`;
             }
             return url;
         }
@@ -303,6 +305,7 @@
                 const isAvail = x.status === 'available';
                 const isPending = x.status.includes('pending');
                 
+                // แปลสถานะเป็นไทย
                 let statusBadge = '';
                 if (isAvail) statusBadge = `<span class="px-2 py-0.5 rounded-md bg-green-100 text-green-700 text-[10px] font-bold border border-green-200">ว่าง</span>`;
                 else if (isPending) statusBadge = `<span class="px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 text-[10px] font-bold border border-blue-200">รออนุมัติ</span>`;
@@ -339,7 +342,7 @@
                             </div>
                             ${!isAvail && x.borrower ? `
                                 <div class="flex items-center text-xs text-gray-500 bg-gray-50 p-1 rounded border border-gray-100 mt-1">
-                                    <span class="material-icons text-[12px] mr-1">person</span> ${x.borrower}
+                                    <span class="material-icons text-[12px] mr-1">person</span> ${x.borrower.split(' - ')[1] || x.borrower}
                                 </div>` : ''}
                         </div>
                     </div>`;
@@ -359,7 +362,7 @@
 
             pending.forEach(x => {
                 const isBorrow = x.status === 'pending_borrow';
-                const typeText = isBorrow ? 'ขอเบิกอุปกรณ์' : 'แจ้งคืนอุปกรณ์';
+                const typeText = isBorrow ? 'ขอเบิก' : 'แจ้งคืน';
                 const typeColor = isBorrow ? 'text-blue-600 bg-blue-50' : 'text-purple-600 bg-purple-50';
                 
                 list.innerHTML += `
@@ -430,9 +433,7 @@
             document.getElementById('actEmpId').value = ''; 
             document.getElementById('actName').value = ''; 
             
-            // ถ้าเป็นการคืน ให้ใส่ชื่อคนยืมเดิมให้อัตโนมัติ (แต่เราเก็บเป็น string ต้องแยกออก)
             if(!isAvail && selItem.borrower) {
-                // สมมติเก็บเป็น "123456 - ชื่อ"
                 const parts = selItem.borrower.split(' - ');
                 if(parts.length > 1) {
                     document.getElementById('actEmpId').value = parts[0];
@@ -449,12 +450,14 @@
             const empId = document.getElementById('actEmpId').value.trim();
             const name = document.getElementById('actName').value.trim();
             
-            // Validation
-            if(!/^\d{6,12}$/.test(empId)) { alert('รหัสพนักงานต้องเป็นตัวเลข 6-12 หลักเท่านั้น'); return; }
+            // --- VALIDATION รหัสพนักงาน 6-12 หลัก ---
+            if(!/^\d{6,12}$/.test(empId)) { 
+                alert('รหัสพนักงานต้องเป็นตัวเลข 6-12 หลักเท่านั้น'); 
+                return; 
+            }
             if(!name) { alert('กรุณาระบุชื่อ-นามสกุล'); return; }
 
-            const fullName = `${empId} - ${name}`;
-
+            const fullName = `${empId} - ${name}`; // บันทึกแบบรวม
 
             const isAvail = selItem.status === 'available';
             const action = isAvail ? 'borrow_request' : 'return_request';
@@ -485,7 +488,7 @@
 
         function doLogin() {
             const p = document.getElementById('pass').value;
-            // ********** แก้รหัสผ่านตรงนี้ **********
+            // ตั้งรหัสผ่าน Admin
             if(p === '1234' || p === 'admin' || p === 'jiraphong2227') { 
                 isAdmin = true;
                 closeM('loginModal');
@@ -498,6 +501,18 @@
                 loadHistory(); 
             } else {
                 alert('รหัสผ่านไม่ถูกต้อง');
+            }
+        }
+
+        function togglePass() {
+            const input = document.getElementById('pass');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerText = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.innerText = 'visibility';
             }
         }
 
@@ -535,7 +550,7 @@
             if(success) closeM('upModal');
         }
 
-        async function del(id) { if(confirm('ลบ?')) await send({ action: 'delete', id: id }); }
+        async function del(id) { if(confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) await send({ action: 'delete', id: id }); }
 
         function openApprove(id, type, name) {
             document.getElementById('apprId').value = id;
@@ -555,7 +570,7 @@
         }
 
         async function reject(id, type) {
-            if(!confirm('ปฏิเสธ?')) return;
+            if(!confirm('ปฏิเสธคำขอนี้?')) return;
             await send({ action: type === 'borrow' ? 'reject_borrow' : 'reject_return', id: id });
         }
 
