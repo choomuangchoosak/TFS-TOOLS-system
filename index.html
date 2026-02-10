@@ -120,9 +120,15 @@
             <p class="text-sm text-gray-500 mb-6" id="actSub">รายละเอียดอุปกรณ์</p>
             
             <form onsubmit="event.preventDefault(); submitAct();">
-                <div id="nameField" class="mb-6">
-                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wide">ชื่อผู้ทำรายการ</label>
-                    <input type="text" id="actName" class="w-full mt-2 p-3 border border-gray-300 rounded-xl bg-gray-50 outline-none focus:border-schindler-red focus:ring-1 focus:ring-schindler-red transition" placeholder="ระบุชื่อของคุณ (ภาษาไทย/อังกฤษ)" required>
+                <div class="space-y-4 mb-6">
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide">รหัสพนักงาน (6-12 หลัก)</label>
+                        <input type="tel" id="actEmpId" class="w-full mt-1 p-3 border border-gray-300 rounded-xl bg-gray-50 outline-none focus:border-schindler-red focus:ring-1 focus:ring-schindler-red transition font-mono text-lg" placeholder="123456" maxlength="12" pattern="\d*" inputmode="numeric" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide">ชื่อ-นามสกุล</label>
+                        <input type="text" id="actName" class="w-full mt-1 p-3 border border-gray-300 rounded-xl bg-gray-50 outline-none focus:border-schindler-red focus:ring-1 focus:ring-schindler-red transition" placeholder="ระบุชื่อของคุณ" required>
+                    </div>
                 </div>
                 <div class="flex gap-3">
                     <button type="button" onclick="closeM('actModal')" class="flex-1 py-3 bg-gray-100 rounded-xl font-bold text-gray-600 hover:bg-gray-200 transition">ยกเลิก</button>
@@ -144,7 +150,7 @@
                     </div>
                     <div>
                         <label class="text-xs font-bold text-gray-500">ชื่ออุปกรณ์</label>
-                        <input type="text" id="upName" class="w-full mt-1 p-3 border rounded-xl outline-none focus:border-schindler-red" required placeholder="เช่น สว่านไร้สาย Makita">
+                        <input type="text" id="upName" class="w-full mt-1 p-3 border rounded-xl outline-none focus:border-schindler-red" required>
                     </div>
                     <div>
                         <label class="text-xs font-bold text-gray-500">ลิงก์รูปภาพ (Google Drive)</label>
@@ -171,8 +177,7 @@
                 
                 <div class="mb-4">
                     <label class="text-xs font-bold text-gray-500 block mb-1">ลิงก์รูปหลักฐาน (ถ้ามี)</label>
-                    <input type="text" id="apprProofUrl" class="w-full p-3 border rounded-xl text-sm bg-gray-50 focus:border-schindler-red outline-none" placeholder="เช่น ลิงก์รูปสภาพของตอนคืน...">
-                    <p class="text-[10px] text-gray-400 mt-1">* ลิงก์นี้จะถูกบันทึกในประวัติ (History)</p>
+                    <input type="text" id="apprProofUrl" class="w-full p-3 border rounded-xl text-sm bg-gray-50 focus:border-schindler-red outline-none" placeholder="เช่น รูปสภาพของตอนคืน...">
                 </div>
 
                 <div class="flex gap-2">
@@ -203,31 +208,27 @@
     </div>
 
     <script>
-        // ------------------------------------------
-        // ใส่ URL Web App อันใหม่ที่นี่
-        // ------------------------------------------
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyB6yvEhg_Ikv8w8pj28FXYhFKu2TuM1jWjKlck2NeaTYZUeV9m9TSceK2Of4gyXq_x/exec'; 
-        // ------------------------------------------
+        // ==========================================
+        // 🚨 สำคัญมาก: ใส่ URL Web App ที่ Deploy ล่าสุด !! 🚨
+        // ==========================================
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwB5Nc88A5HVJ74EWI5dvyMURCIGvYi43PwVWCuAucNMClSd2d7SIDYgAfhvigrH8LS/exec'; 
+        // ==========================================
         
         let items = [], historyData = [], filter = 'all', isAdmin = false, selItem = null;
 
-        // เริ่มทำงานเมื่อโหลดหน้าเสร็จ
         document.addEventListener('DOMContentLoaded', load);
 
         async function load() {
             document.getElementById('loading').classList.remove('hidden');
-            document.getElementById('grid').innerHTML = ''; // Clear grid
+            document.getElementById('grid').innerHTML = '';
             try {
-                // เรียกข้อมูล Item
                 const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({action:'read'}) });
                 const json = await res.json();
                 items = json.data || [];
                 render();
-                
-                // ถ้าเป็น Admin ให้โหลด History ด้วย
                 if(isAdmin) loadHistory(); 
             } catch(e) { 
-                alert('Connection Error: ' + e.message); 
+                alert('Connection Error: ' + e.message + '\n\nกรุณาตรวจสอบ URL ในโค้ด'); 
             } finally { 
                 document.getElementById('loading').classList.add('hidden'); 
             }
@@ -248,7 +249,7 @@
                 const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const json = await res.json();
                 if(json.status === 'success') {
-                    await load(); // โหลดข้อมูลใหม่
+                    await load();
                     return true;
                 } else {
                     throw new Error(json.message || 'Unknown Error');
@@ -261,35 +262,31 @@
             }
         }
 
-        // --- Helper: แปลง Google Drive Link เป็นรูปภาพ ---
         function getImgUrl(url) {
             if (!url) return '';
-            // ถ้าเป็นลิงก์ Google Drive แบบแชร์ (drive.google.com/file/d/XXX/view)
             if (url.includes('drive.google.com')) {
-                // ดึง ID ออกมา (ยาวๆ ประมาณ 33 ตัวอักษร)
-                const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]{25,})/);
-                if (idMatch && idMatch[1]) {
-                    // แปลงเป็น Direct Link
-                    return `https://drive.google.com/uc?export=view&id=${idMatch[1]}`;
+                let id = '';
+                const match1 = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                if (match1) id = match1[1];
+                else {
+                    const match2 = url.match(/id=([a-zA-Z0-9_-]+)/);
+                    if (match2) id = match2[1];
                 }
+                if (id) return `https://lh3.googleusercontent.com/d/${id}`; // แก้ไข Thumbnail link
             }
             return url;
         }
 
-        // --- Render UI ---
         function render() {
             const grid = document.getElementById('grid');
             grid.innerHTML = '';
             
-            // Update Stats
             document.getElementById('cAvail').innerText = items.filter(x=>x.status==='available').length;
             document.getElementById('cBorrow').innerText = items.filter(x=>x.status!=='available').length;
 
             if(isAdmin) renderAdminReqs();
 
             const term = document.getElementById('searchBox').value.toLowerCase();
-            
-            // Filter Logic
             const list = items.filter(x => {
                 const matchText = x.name.toLowerCase().includes(term) || x.id.toLowerCase().includes(term);
                 if(filter === 'available') return matchText && x.status === 'available';
@@ -306,13 +303,11 @@
                 const isAvail = x.status === 'available';
                 const isPending = x.status.includes('pending');
                 
-                // Style ตามสถานะ
                 let statusBadge = '';
                 if (isAvail) statusBadge = `<span class="px-2 py-0.5 rounded-md bg-green-100 text-green-700 text-[10px] font-bold border border-green-200">ว่าง</span>`;
                 else if (isPending) statusBadge = `<span class="px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 text-[10px] font-bold border border-blue-200">รออนุมัติ</span>`;
                 else statusBadge = `<span class="px-2 py-0.5 rounded-md bg-yellow-100 text-yellow-700 text-[10px] font-bold border border-yellow-200">ถูกยืม</span>`;
 
-                // Admin Buttons
                 let adminControls = '';
                 if(isAdmin) {
                     adminControls = `
@@ -322,13 +317,11 @@
                     </div>`;
                 }
 
-                // Image Handling (ใช้ฟังก์ชันแปลงลิงก์)
                 const cleanUrl = getImgUrl(x.photoUrl);
                 const imgDisplay = cleanUrl 
-                    ? `<img src="${cleanUrl}" class="w-full h-full object-cover transition duration-300 group-hover:scale-110" onerror="this.src='https://via.placeholder.com/100?text=No+Img'">` 
+                    ? `<img src="${cleanUrl}" class="w-full h-full object-cover transition duration-300 group-hover:scale-110" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-gray-200 flex items-center justify-center\'><span class=\'material-icons text-gray-400\'>broken_image</span></div>'">` 
                     : `<div class="w-full h-full bg-gray-200 flex items-center justify-center"><span class="material-icons text-gray-400">image</span></div>`;
 
-                // Card HTML
                 grid.innerHTML += `
                     <div class="group bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex h-28 relative active:scale-95 transition-all duration-200 cursor-pointer hover:shadow-md" onclick="clk('${x.id}')">
                         ${adminControls}
@@ -400,7 +393,6 @@
                 const cleanProof = getImgUrl(h.proofUrl);
                 const hasLink = cleanProof && cleanProof.length > 5;
                 const linkBtn = hasLink ? `<a href="${cleanProof}" target="_blank" class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-[10px] font-bold hover:bg-blue-100 ml-auto flex items-center gap-1"><span class="material-icons text-[10px]">image</span>ดูรูป</a>` : '';
-                
                 let actionColor = h.action === 'Approved Borrow' ? 'text-green-600' : 'text-purple-600';
                 
                 list.innerHTML += `
@@ -419,9 +411,8 @@
             });
         }
 
-        // --- User Actions ---
         function clk(id) {
-            if(isAdmin) return; // Admin คลิกเพื่อ Edit ไม่ใช่ยืม
+            if(isAdmin) return;
             
             selItem = items.find(x => x.id === id);
             
@@ -433,23 +424,37 @@
             const isAvail = selItem.status === 'available';
             
             document.getElementById('actTitle').innerText = isAvail ? 'ยืมอุปกรณ์' : 'คืนอุปกรณ์';
-            
-document.getElementById('actTitle').className = isAvail ? 'text-xl font-bold text-green-700' : 'text-xl font-bold text-purple-700';
+            document.getElementById('actTitle').className = isAvail ? 'text-xl font-bold text-green-700' : 'text-xl font-bold text-purple-700';
             
             document.getElementById('actSub').innerText = `${selItem.id}: ${selItem.name}`;
+            document.getElementById('actEmpId').value = ''; 
             document.getElementById('actName').value = ''; 
             
-            // ถ้าคืน ใส่ชื่อคนยืมเดิมให้
+            // ถ้าเป็นการคืน ให้ใส่ชื่อคนยืมเดิมให้อัตโนมัติ (แต่เราเก็บเป็น string ต้องแยกออก)
             if(!isAvail && selItem.borrower) {
-                document.getElementById('actName').value = selItem.borrower;
+                // สมมติเก็บเป็น "123456 - ชื่อ"
+                const parts = selItem.borrower.split(' - ');
+                if(parts.length > 1) {
+                    document.getElementById('actEmpId').value = parts[0];
+                    document.getElementById('actName').value = parts[1];
+                } else {
+                    document.getElementById('actName').value = selItem.borrower;
+                }
             }
 
             document.getElementById('actModal').classList.remove('hidden');
         }
 
         async function submitAct() {
+            const empId = document.getElementById('actEmpId').value.trim();
             const name = document.getElementById('actName').value.trim();
-            if(!name) { alert('กรุณาระบุชื่อผู้ทำรายการ'); return; }
+            
+            // Validation
+            if(!/^\d{6,12}$/.test(empId)) { alert('รหัสพนักงานต้องเป็นตัวเลข 6-12 หลักเท่านั้น'); return; }
+            if(!name) { alert('กรุณาระบุชื่อ-นามสกุล'); return; }
+
+            const fullName = `${empId} - ${name}`;
+
 
             const isAvail = selItem.status === 'available';
             const action = isAvail ? 'borrow_request' : 'return_request';
@@ -457,16 +462,14 @@ document.getElementById('actTitle').className = isAvail ? 'text-xl font-bold tex
             const success = await send({
                 action: action,
                 id: selItem.id,
-                user: name
+                user: fullName
             });
 
             if(success) closeM('actModal');
         }
 
-        // --- Admin Actions ---
         function toggleAdmin() {
             if(isAdmin) {
-                // Logout
                 isAdmin = false;
                 document.getElementById('adminPanel').classList.add('hidden');
                 document.getElementById('addBtn').classList.add('hidden');
@@ -475,7 +478,6 @@ document.getElementById('actTitle').className = isAvail ? 'text-xl font-bold tex
                 document.getElementById('adminBtn').classList.add('bg-gray-800');
                 render();
             } else {
-                // Show Login
                 document.getElementById('pass').value = '';
                 document.getElementById('loginModal').classList.remove('hidden');
             }
@@ -487,14 +489,11 @@ document.getElementById('actTitle').className = isAvail ? 'text-xl font-bold tex
             if(p === '1234' || p === 'admin' || p === 'jiraphong2227') { 
                 isAdmin = true;
                 closeM('loginModal');
-                
                 document.getElementById('adminPanel').classList.remove('hidden');
                 document.getElementById('addBtn').classList.remove('hidden');
                 document.getElementById('userStats').classList.add('hidden');
-                
                 document.getElementById('adminBtn').classList.remove('bg-gray-800');
                 document.getElementById('adminBtn').classList.add('bg-red-600'); 
-
                 render();
                 loadHistory(); 
             } else {
@@ -502,16 +501,12 @@ document.getElementById('actTitle').className = isAvail ? 'text-xl font-bold tex
             }
         }
 
-        // --- CRUD Item ---
         function openUpsert() {
             document.getElementById('upMode').value = 'create';
             document.getElementById('upTitle').innerText = 'เพิ่มอุปกรณ์ใหม่';
-            
-            // Auto ID Calculation (TFS-XXX)
             const nums = items.map(x => parseInt(x.id.replace(/\D/g,'')) || 0);
             const next = nums.length ? Math.max(...nums)+1 : 1;
             document.getElementById('upId').value = `TFS-${String(next).padStart(3,'0')}`;
-            
             document.getElementById('upName').value = '';
             document.getElementById('upPhotoUrl').value = '';
             document.getElementById('upModal').classList.remove('hidden');
@@ -536,17 +531,12 @@ document.getElementById('actTitle').className = isAvail ? 'text-xl font-bold tex
                 type: 'General', 
                 photoUrl: document.getElementById('upPhotoUrl').value
             };
-            
             const success = await send(payload);
             if(success) closeM('upModal');
         }
 
-        async function del(id) {
-            if(!confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) return;
-            await send({ action: 'delete', id: id });
-        }
+        async function del(id) { if(confirm('ลบ?')) await send({ action: 'delete', id: id }); }
 
-        // --- Approval System ---
         function openApprove(id, type, name) {
             document.getElementById('apprId').value = id;
             document.getElementById('apprType').value = type;
@@ -556,62 +546,38 @@ document.getElementById('actTitle').className = isAvail ? 'text-xl font-bold tex
         }
 
         async function submitApprove() {
-            const id = document.getElementById('apprId').value;
-            const type = document.getElementById('apprType').value; 
-            const proof = document.getElementById('apprProofUrl').value;
-
             const success = await send({
-                action: type === 'borrow' ? 'approve_borrow' : 'approve_return',
-                id: id,
-                proofUrl: proof
+                action: document.getElementById('apprType').value === 'borrow' ? 'approve_borrow' : 'approve_return',
+                id: document.getElementById('apprId').value,
+                proofUrl: document.getElementById('apprProofUrl').value
             });
-
             if(success) closeM('approveModal');
         }
 
         async function reject(id, type) {
-            if(!confirm('ปฏิเสธคำขอนี้?')) return;
-            await send({
-                action: type === 'borrow' ? 'reject_borrow' : 'reject_return',
-                id: id
-            });
+            if(!confirm('ปฏิเสธ?')) return;
+            await send({ action: type === 'borrow' ? 'reject_borrow' : 'reject_return', id: id });
         }
 
-        // --- UI Utilities ---
-        function closeM(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-
+        function closeM(id) { document.getElementById(id).classList.add('hidden'); }
         function setFilter(f) {
             filter = f;
-            ['btnAll','btnAvail','btnBorrow'].forEach(b => {
-                document.getElementById(b).className = 'flex-1 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 transition';
-            });
-            
-            const activeClass = 'bg-gray-800 text-white shadow-md transform scale-105';
-            if(f==='all') document.getElementById('btnAll').className = `flex-1 py-1.5 rounded-lg text-xs font-bold transition ${activeClass}`;
-            if(f==='available') document.getElementById('btnAvail').className = `flex-1 py-1.5 rounded-lg text-xs font-bold transition ${activeClass}`;
-            if(f==='borrowed') document.getElementById('btnBorrow').className = `flex-1 py-1.5 rounded-lg text-xs font-bold transition ${activeClass}`;
-
+            ['btnAll','btnAvail','btnBorrow'].forEach(b => document.getElementById(b).className = 'flex-1 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 transition');
+            const active = f==='all'?'btnAll':(f==='available'?'btnAvail':'btnBorrow');
+            document.getElementById(active).className = 'flex-1 py-1.5 rounded-lg text-xs font-bold bg-gray-800 text-white transition shadow-md transform scale-105';
             render();
         }
-
         function switchTab(tab) {
-            const reqBtn = document.getElementById('tab-requests');
-            const histBtn = document.getElementById('tab-history');
-            const reqView = document.getElementById('view-requests');
-            const histView = document.getElementById('view-history');
-
             if(tab === 'requests') {
-                reqBtn.classList.add('active');
-                histBtn.classList.remove('active');
-                reqView.classList.remove('hidden');
-                histView.classList.add('hidden');
+                document.getElementById('tab-requests').classList.add('active');
+                document.getElementById('tab-history').classList.remove('active');
+                document.getElementById('view-requests').classList.remove('hidden');
+                document.getElementById('view-history').classList.add('hidden');
             } else {
-                reqBtn.classList.remove('active');
-                histBtn.classList.add('active');
-                reqView.classList.add('hidden');
-                histView.classList.remove('hidden');
+                document.getElementById('tab-requests').classList.remove('active');
+                document.getElementById('tab-history').classList.add('active');
+                document.getElementById('view-requests').classList.add('hidden');
+                document.getElementById('view-history').classList.remove('hidden');
             }
         }
     </script>
