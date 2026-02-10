@@ -2,8 +2,8 @@
 <html lang="th" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TFS Equipment Management | Schindler</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TFS Equipment System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -25,190 +25,223 @@
         }
     </script>
     <style>
-        body { background-color: #F8F9FA; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #E2001A; border-radius: 3px; }
-        .sch-card { background: white; border: 1px solid #e5e7eb; border-radius: 4px; transition: all 0.2s ease; }
-        .sch-card:hover { border-color: #E2001A; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .btn-float { position: fixed; bottom: 2rem; right: 2rem; z-index: 40; }
+        body { background-color: #F8F9FA; -webkit-tap-highlight-color: transparent; }
+        .sch-card { background: white; border: 1px solid #e5e7eb; border-radius: 8px; transition: all 0.2s ease; }
+        .sch-card:active { transform: scale(0.98); }
+        .btn-touch { min-height: 50px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #E2001A; border-radius: 2px; }
     </style>
 </head>
 <body class="h-full flex flex-col text-gray-800">
 
-    <header class="bg-black text-white shadow-md sticky top-0 z-50 border-b-4 border-schindler-red">
+    <header class="bg-black text-white shadow-md sticky top-0 z-40 border-b-4 border-schindler-red">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex flex-col leading-none">
                 <span class="text-2xl font-bold tracking-wider">Schindler</span>
                 <span class="text-[10px] text-gray-400 uppercase tracking-[0.2em]">TFS Equipment System</span>
             </div>
-            <button onclick="toggleAdminLogin()" class="p-2 hover:bg-gray-800 rounded flex items-center gap-2 transition">
-                <span class="material-icons text-gray-400" id="adminIcon">admin_panel_settings</span>
-                <span class="hidden md:inline text-sm" id="adminText">Admin Login</span>
+            <button onclick="toggleAdminLogin()" class="p-3 bg-gray-900 rounded-full hover:bg-gray-800 active:bg-gray-700 transition">
+                <span class="material-icons text-white" id="adminIcon">admin_panel_settings</span>
             </button>
         </div>
     </header>
 
-    <main class="flex-1 overflow-auto p-4 md:p-6">
-        <div class="max-w-7xl mx-auto">
+    <main class="flex-1 overflow-auto p-4 pb-24">
+        <div class="max-w-lg mx-auto space-y-4">
             
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white p-4 rounded border-l-4 border-gray-800 shadow-sm">
-                    <div class="text-xs text-gray-500 font-bold uppercase">Total Items</div>
-                    <div class="text-2xl font-bold" id="totalCount">0</div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white p-3 rounded-lg border-l-4 border-gray-800 shadow-sm">
+                    <div class="text-xs text-gray-500 font-bold">ทั้งหมด</div>
+                    <div class="text-2xl font-bold mt-1" id="totalCount">0</div>
                 </div>
-                <div class="bg-white p-4 rounded border-l-4 border-green-500 shadow-sm">
-                    <div class="text-xs text-gray-500 font-bold uppercase">Available</div>
-                    <div class="text-2xl font-bold text-green-600" id="availableCount">0</div>
+                <div class="bg-white p-3 rounded-lg border-l-4 border-green-500 shadow-sm">
+                    <div class="text-xs text-gray-500 font-bold">ว่าง / พร้อมใช้</div>
+                    <div class="text-2xl font-bold text-green-600 mt-1" id="availableCount">0</div>
                 </div>
-                <div class="bg-white p-4 rounded border-l-4 border-yellow-500 shadow-sm">
-                    <div class="text-xs text-gray-500 font-bold uppercase">Borrowed</div>
-                    <div class="text-2xl font-bold text-yellow-600" id="borrowedCount">0</div>
+                <div class="bg-white p-3 rounded-lg border-l-4 border-yellow-500 shadow-sm">
+                    <div class="text-xs text-gray-500 font-bold">ถูกยืม</div>
+                    <div class="text-2xl font-bold text-yellow-600 mt-1" id="borrowedCount">0</div>
                 </div>
-                <div class="bg-white p-4 rounded border-l-4 border-blue-500 shadow-sm">
-                    <div class="text-xs text-gray-500 font-bold uppercase">Pending</div>
-                    <div class="text-2xl font-bold text-blue-600" id="pendingCount">0</div>
+                <div class="bg-white p-3 rounded-lg border-l-4 border-blue-500 shadow-sm">
+                    <div class="text-xs text-gray-500 font-bold">รออนุมัติ</div>
+                    <div class="text-2xl font-bold text-blue-600 mt-1" id="pendingCount">0</div>
                 </div>
             </div>
 
-            <div id="adminDashboard" class="hidden mb-8 fade-in">
-                <div class="bg-white rounded shadow border border-gray-200 overflow-hidden">
-                    <div class="p-4 bg-red-50 border-b border-red-100 flex justify-between items-center">
-                        <h3 class="font-bold text-schindler-red flex items-center gap-2">
-                            <span class="material-icons">notifications_active</span> Pending Requests
+            <div id="adminDashboard" class="hidden animate-fade-in">
+                <div class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+                    <div class="p-3 bg-red-50 border-b border-red-100 flex justify-between items-center">
+                        <h3 class="font-bold text-schindler-red flex items-center gap-2 text-sm">
+                            <span class="material-icons text-base">notifications_active</span> รายการรออนุมัติ
                         </h3>
                     </div>
                     <div id="adminRequestList" class="divide-y divide-gray-100"></div>
-                    <div id="noPendingMsg" class="hidden p-6 text-center text-gray-400 text-sm">No pending requests.</div>
+                    <div id="noPendingMsg" class="hidden p-6 text-center text-gray-400 text-sm">ไม่มีรายการรออนุมัติ</div>
                 </div>
             </div>
 
-            <div class="flex flex-col md:flex-row gap-4 mb-6 justify-between items-center bg-white p-4 rounded shadow-sm border border-gray-200">
-                <div class="relative w-full md:w-96">
+            <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-200 sticky top-0 z-30">
+                <div class="relative mb-3">
                     <span class="material-icons absolute left-3 top-2.5 text-gray-400">search</span>
-                    <input type="text" id="searchInput" placeholder="Search ID or Name..." 
-                           class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded focus:border-schindler-red outline-none"
+                    <input type="text" id="searchInput" placeholder="ค้นหาชื่อ หรือ รหัส..." 
+                           class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:border-schindler-red focus:ring-1 focus:ring-schindler-red outline-none transition"
                            oninput="renderGrid()">
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="setFilter('all')" class="filter-btn active px-3 py-1.5 rounded text-sm font-medium bg-gray-800 text-white">All</button>
-                    <button onclick="setFilter('available')" class="filter-btn px-3 py-1.5 rounded text-sm font-medium bg-gray-200 text-gray-600">Available</button>
-                    <button onclick="setFilter('borrowed')" class="filter-btn px-3 py-1.5 rounded text-sm font-medium bg-gray-200 text-gray-600">Borrowed</button>
+                <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                    <button onclick="setFilter('all')" class="filter-btn flex-1 min-w-[80px] py-2 rounded-lg text-sm font-medium bg-gray-800 text-white shadow-sm transition">ทั้งหมด</button>
+                    <button onclick="setFilter('available')" class="filter-btn flex-1 min-w-[80px] py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 border border-gray-200">ว่าง</button>
+                    <button onclick="setFilter('borrowed')" class="filter-btn flex-1 min-w-[80px] py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 border border-gray-200">ถูกยืม</button>
                 </div>
             </div>
 
-            <div id="equipmentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-20"></div>
+            <div id="equipmentGrid" class="grid grid-cols-1 gap-4">
+                </div>
 
         </div>
     </main>
 
-    <button id="addBtn" onclick="openUpsertModal()" class="hidden btn-float bg-schindler-red text-white p-4 rounded-full shadow-lg hover:bg-red-700 transition transform hover:scale-105">
-        <span class="material-icons text-2xl">add</span>
+    <button id="addBtn" onclick="openUpsertModal()" class="hidden fixed bottom-6 right-6 w-14 h-14 bg-schindler-red text-white rounded-full shadow-lg hover:bg-red-700 active:scale-90 transition flex items-center justify-center z-40">
+        <span class="material-icons text-3xl">add</span>
     </button>
 
-    <div id="loadingOverlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-        <div class="flex flex-col items-center">
-            <div class="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-schindler-red"></div>
-            <div class="mt-4 text-gray-500 font-bold text-sm tracking-widest">PROCESSING...</div>
+    <div id="alertModal" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-xl shadow-2xl overflow-hidden animate-bounce-in">
+            <div class="bg-schindler-red p-4 flex items-center justify-center">
+                <span class="material-icons text-white text-4xl" id="alertIcon">error_outline</span>
+            </div>
+            <div class="p-6 text-center">
+                <h3 class="text-xl font-bold text-gray-800 mb-2" id="alertTitle">แจ้งเตือน</h3>
+                <p class="text-gray-600 mb-6" id="alertMessage">ข้อความแจ้งเตือน</p>
+                <button onclick="closeAlert()" class="w-full btn-touch bg-black text-white rounded-lg font-bold hover:bg-gray-800">ตกลง</button>
+            </div>
         </div>
     </div>
 
-    <div id="borrowModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded shadow-2xl p-6 border-t-4 border-schindler-red">
-            <h3 class="text-xl font-bold mb-1" id="borrowModalTitle">Request</h3>
-            <p class="text-gray-500 text-sm mb-6" id="borrowModalSub">...</p>
+    <div id="borrowModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center sm:p-4">
+        <div class="bg-white w-full md:max-w-md md:rounded-xl rounded-t-2xl shadow-2xl p-6 border-t-4 border-schindler-red animate-slide-up">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold" id="borrowModalTitle">ทำรายการ</h3>
+                <button onclick="closeModal('borrowModal')" class="p-2 bg-gray-100 rounded-full"><span class="material-icons text-gray-500">close</span></button>
+            </div>
+            
+            <p class="text-gray-500 text-sm mb-6 bg-gray-50 p-3 rounded border border-gray-200" id="borrowModalSub">...</p>
+            
             <form onsubmit="event.preventDefault(); submitBorrow();">
-                <div id="borrowerField" class="mb-4">
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Technician Name</label>
-                    <input type="text" id="borrowerName" class="w-full p-2 border border-gray-300 rounded focus:border-schindler-red outline-none">
+                <div id="borrowerField" class="mb-6">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">ชื่อช่าง / ผู้ยืม</label>
+                    <input type="text" id="borrowerName" class="w-full p-3 border border-gray-300 rounded-lg focus:border-schindler-red outline-none text-lg" placeholder="ระบุชื่อของคุณ">
                 </div>
-                <div class="flex gap-2 justify-end">
-                    <button type="button" onclick="closeModal('borrowModal')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded text-sm font-medium">Cancel</button>
-                    <button type="submit" class="px-6 py-2 bg-schindler-red text-white rounded text-sm font-bold hover:bg-red-700">CONFIRM</button>
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 btn-touch bg-schindler-red text-white rounded-lg font-bold shadow-md active:bg-red-800">ยืนยัน</button>
                 </div>
             </form>
         </div>
     </div>
 
     <div id="loginModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded shadow-2xl p-6">
-            <h3 class="text-xl font-bold text-center mb-6">Admin Access</h3>
+        <div class="bg-white w-full max-w-sm rounded-xl shadow-2xl p-6">
+            <div class="text-center mb-6">
+                <h3 class="text-xl font-bold">เข้าสู่ระบบ Admin</h3>
+                <p class="text-xs text-gray-400">สำหรับผู้ดูแลระบบเท่านั้น</p>
+            </div>
             <form onsubmit="event.preventDefault(); submitLogin();">
-                <input type="password" id="adminPass" placeholder="Password" class="w-full p-3 border border-gray-300 rounded text-center mb-4 focus:border-schindler-red outline-none">
-                <button type="submit" class="w-full py-3 bg-black text-white rounded font-bold hover:bg-gray-800">LOGIN</button>
-                <button type="button" onclick="closeModal('loginModal')" class="w-full mt-2 py-2 text-gray-400 text-sm">Cancel</button>
+                <input type="password" id="adminPass" placeholder="รหัสผ่าน" class="w-full p-3 border border-gray-300 rounded-lg text-center mb-4 focus:border-schindler-red outline-none text-lg">
+                <button type="submit" class="w-full btn-touch bg-black text-white rounded-lg font-bold">เข้าสู่ระบบ</button>
+                <button type="button" onclick="closeModal('loginModal')" class="w-full mt-3 py-2 text-gray-400 text-sm">ยกเลิก</button>
             </form>
         </div>
     </div>
 
-    <div id="upsertModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded shadow-2xl p-6 border-t-4 border-schindler-red max-h-[90vh] overflow-y-auto">
-            <h3 class="text-xl font-bold mb-6" id="upsertTitle">Add Equipment</h3>
+    <div id="upsertModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center sm:p-4">
+        <div class="bg-white w-full md:max-w-md md:rounded-xl rounded-t-2xl shadow-2xl p-6 h-[85vh] md:h-auto overflow-y-auto">
+            <h3 class="text-xl font-bold mb-6" id="upsertTitle">เพิ่มอุปกรณ์</h3>
             <form onsubmit="event.preventDefault(); submitUpsert();">
                 <input type="hidden" id="upsertMode" value="add">
                 
-                <div class="mb-3">
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Equipment ID</label>
-                    <input type="text" id="upsertId" class="w-full p-2 border border-gray-300 rounded focus:border-schindler-red outline-none bg-gray-50" required>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Name</label>
-                    <input type="text" id="upsertName" class="w-full p-2 border border-gray-300 rounded focus:border-schindler-red outline-none" required>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Type/Category</label>
-                    <select id="upsertType" class="w-full p-2 border border-gray-300 rounded focus:border-schindler-red outline-none">
-                        <option value="Power Tool">Power Tool</option>
-                        <option value="Measurement">Measurement</option>
-                        <option value="Safety">Safety</option>
-                        <option value="IT">IT</option>
-                        <option value="General">General</option>
-                    </select>
-                </div>
-                <div class="mb-6">
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Photo</label>
-                    <input type="file" id="upsertFile" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
-                    <p class="text-xs text-red-500 mt-1">* Leave blank to keep existing photo (Edit mode)</p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">รหัสอุปกรณ์ (Auto)</label>
+                        <input type="text" id="upsertId" class="w-full p-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-500" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">ชื่ออุปกรณ์</label>
+                        <input type="text" id="upsertName" class="w-full p-3 border border-gray-300 rounded-lg focus:border-schindler-red outline-none" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">หมวดหมู่</label>
+                        <select id="upsertType" class="w-full p-3 border border-gray-300 rounded-lg bg-white">
+                            <option value="เครื่องมือไฟฟ้า (Power Tool)">เครื่องมือไฟฟ้า</option>
+                            <option value="เครื่องมือวัด (Measurement)">เครื่องมือวัด</option>
+                            <option value="อุปกรณ์ความปลอดภัย (Safety)">อุปกรณ์ความปลอดภัย</option>
+                            <option value="อุปกรณ์ไอที (IT)">อุปกรณ์ไอที</option>
+                            <option value="ทั่วไป (General)">ทั่วไป</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">รูปภาพ</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50" onclick="document.getElementById('upsertFile').click()">
+                            <span class="material-icons text-gray-400">add_photo_alternate</span>
+                            <p class="text-xs text-gray-500">แตะเพื่อเลือกรูปภาพ</p>
+                        </div>
+                        <input type="file" id="upsertFile" accept="image/*" class="hidden">
+                    </div>
                 </div>
 
-                <div class="flex gap-2 justify-end">
-                    <button type="button" onclick="closeModal('upsertModal')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded text-sm font-medium">Cancel</button>
-                    <button type="submit" class="px-6 py-2 bg-schindler-red text-white rounded text-sm font-bold hover:bg-red-700">SAVE ITEM</button>
+                <div class="flex gap-3 mt-8">
+                    <button type="button" onclick="closeModal('upsertModal')" class="flex-1 btn-touch bg-gray-100 text-gray-600 rounded-lg font-bold">ยกเลิก</button>
+                    <button type="submit" class="flex-1 btn-touch bg-schindler-red text-white rounded-lg font-bold shadow-md">บันทึก</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <div id="loadingOverlay" class="fixed inset-0 bg-white/90 backdrop-blur-sm z-[70] flex flex-col items-center justify-center hidden">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-schindler-red"></div>
+        <div class="mt-4 text-gray-800 font-bold animate-pulse">กำลังประมวลผล...</div>
+    </div>
+
     <script>
-        // --- CONFIGURATION ---
-        const API_URL = 'https://script.google.com/macros/s/AKfycbz_RZDCgQ5uDiREyiaRKD8JKIl5cfhHSQnRU4yaAhMQEv84dcbNJh_lYMMRmRnaWdrC/exec'; // ใส่ URL ของคุณที่นี่
+        // ----------------------------------------------------
+        // ส่วนตั้งค่า (นำ URL ใหม่มาใส่ตรงนี้!)
+        // ----------------------------------------------------
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwzZ6uxYVS6OHR3CtY7OvfQvl-eeB-Fv1S4RRt6YUdnTMzmkTPdB2zuEsXBJyW9qrT0/exec'; 
         const ADMIN_PASSWORD = 'jiraphong2227';
 
-        // --- STATE ---
+        // Variables
         let equipmentData = [];
         let currentFilter = 'all';
         let isAdmin = false;
         let selectedItem = null;
 
-        // --- INIT ---
+        // Init
         document.addEventListener('DOMContentLoaded', fetchData);
 
+        // Fetch Data
         async function fetchData() {
             document.getElementById('loadingOverlay').classList.remove('hidden');
             try {
                 const res = await fetch(API_URL);
-                equipmentData = await res.json();
+                const data = await res.json();
+                
+                if(data.status === 'error') throw new Error(data.message);
+                
+                equipmentData = Array.isArray(data) ? data : [];
                 renderGrid();
                 updateStats();
                 if(isAdmin) renderAdminDashboard();
+                
             } catch (e) {
                 console.error(e);
-                alert('Connection Failed');
+                showAlert('การเชื่อมต่อล้มเหลว', 'ไม่สามารถดึงข้อมูลได้ กรุณาตรวจสอบ:\n1. URL ของ API ถูกต้องหรือไม่\n2. การตั้งค่า Deploy เป็น "Anyone"\n\n' + e.message, 'error');
             } finally {
                 document.getElementById('loadingOverlay').classList.add('hidden');
             }
         }
 
-        // --- RENDER ---
+        // Render Grid
         function renderGrid() {
             const grid = document.getElementById('equipmentGrid');
             grid.innerHTML = '';
@@ -223,158 +256,98 @@
             });
 
             if (filtered.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400">No items found</div>`;
+                grid.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-12 text-gray-400">
+                        <span class="material-icons text-4xl mb-2">search_off</span>
+                        <p>ไม่พบข้อมูล</p>
+                    </div>`;
                 return;
             }
 
             filtered.forEach(item => {
                 const isAvail = item.status === 'available';
-                const statusColor = isAvail ? 'bg-green-100 text-green-800' : item.status.includes('pending') ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800';
+                const statusInfo = getStatusInfo(item.status);
                 
                 const card = document.createElement('div');
-                card.className = `sch-card flex flex-col overflow-hidden relative group`;
+                card.className = `sch-card flex flex-row overflow-hidden relative`;
                 
-                // Admin Edit/Delete Controls
-                const adminControls = isAdmin ? `
-                    <div class="absolute top-2 left-2 z-10 flex gap-1">
-                        <button onclick="openUpsertModal('${item.id}')" class="bg-white p-1.5 rounded-full shadow hover:text-blue-600 text-gray-600">
-                            <span class="material-icons text-sm">edit</span>
-                        </button>
-                        <button onclick="deleteItem('${item.id}')" class="bg-white p-1.5 rounded-full shadow hover:text-red-600 text-gray-600">
-                            <span class="material-icons text-sm">delete</span>
-                        </button>
-                    </div>
-                ` : '';
+                // Admin Buttons
+                let adminActions = '';
+                if(isAdmin) {
+                    adminActions = `
+                    <div class="absolute top-2 left-2 z-10 flex flex-col gap-2">
+                        <button onclick="event.stopPropagation(); openUpsertModal('${item.id}')" class="bg-white/90 p-2 rounded-full shadow text-blue-600 backdrop-blur-sm"><span class="material-icons text-base">edit</span></button>
+                        <button onclick="event.stopPropagation(); deleteItem('${item.id}')" class="bg-white/90 p-2 rounded-full shadow text-red-600 backdrop-blur-sm"><span class="material-icons text-base">delete</span></button>
+                    </div>`;
+                }
 
                 card.innerHTML = `
-                    ${adminControls}
-                    <div class="h-40 bg-gray-100 flex items-center justify-center relative overflow-hidden cursor-pointer" onclick="openBorrowModal('${item.id}')">
-                        ${item.photoUrl ? `<img src="${item.photoUrl}" class="w-full h-full object-cover">` : `<span class="material-icons text-gray-300 text-5xl">inventory_2</span>`}
-                        <div class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-bold uppercase rounded ${statusColor} shadow-sm">
-                            ${item.status.replace('_', ' ')}
-                        </div>
+                    ${adminActions}
+                    <div class="w-1/3 bg-gray-100 relative cursor-pointer" onclick="openBorrowModal('${item.id}')">
+                        ${item.photoUrl ? 
+                            `<img src="${item.photoUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100?text=No+Image'">` : 
+                            `<div class="w-full h-full flex items-center justify-center"><span class="material-icons text-gray-300 text-4xl">inventory_2</span></div>`
+                        }
                     </div>
-                    <div class="p-4 flex-1 flex flex-col cursor-pointer" onclick="openBorrowModal('${item.id}')">
-                        <div class="text-[10px] text-gray-400 font-mono mb-1 uppercase tracking-widest">${item.id}</div>
-                        <h4 class="font-bold text-gray-800 mb-1 leading-tight group-hover:text-schindler-red transition-colors">${item.name}</h4>
-                        <div class="text-xs text-gray-500 mb-2">${item.type}</div>
-                        ${!isAvail ? `<div class="mt-auto pt-2 border-t border-gray-100 text-xs text-gray-600 flex items-center gap-1"><span class="material-icons text-[14px]">person</span> ${item.borrower || '-'}</div>` : ''}
+                    <div class="w-2/3 p-4 flex flex-col justify-between cursor-pointer" onclick="openBorrowModal('${item.id}')">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <span class="text-[10px] text-gray-400 font-mono uppercase tracking-widest">${item.id}</span>
+                                <span class="text-[10px] font-bold px-2 py-1 rounded-full ${statusInfo.bg} ${statusInfo.text} border ${statusInfo.border}">
+                                    ${statusInfo.label}
+                                </span>
+                            </div>
+                            <h4 class="font-bold text-gray-800 text-lg leading-tight mt-1 mb-1 line-clamp-2">${item.name}</h4>
+                            <p class="text-xs text-gray-500 line-clamp-1">${item.type}</p>
+                        </div>
+                        
+                        ${!isAvail ? `<div class="mt-2 pt-2 border-t border-gray-100 text-xs text-gray-600 flex items-center gap-1">
+                            <span class="material-icons text-sm">person</span> <span class="truncate font-medium">${item.borrower || '-'}</span>
+                        </div>` : ''}
                     </div>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        // --- ADMIN CRUD FUNCTIONS ---
-        function openUpsertModal(editId = null) {
-            const modal = document.getElementById('upsertModal');
-            const title = document.getElementById('upsertTitle');
-            const modeInput = document.getElementById('upsertMode');
-            const idInput = document.getElementById('upsertId');
-            
-            // Clear form
-            document.getElementById('upsertName').value = '';
-            document.getElementById('upsertType').value = 'General';
-            document.getElementById('upsertFile').value = '';
-
-            if (editId) {
-                // EDIT MODE
-                const item = equipmentData.find(i => i.id === editId);
-                title.innerText = 'Edit Equipment';
-                modeInput.value = 'edit';
-                idInput.value = item.id;
-                idInput.readOnly = true; // Cannot change ID
-                idInput.classList.add('bg-gray-100');
-                
-                document.getElementById('upsertName').value = item.name;
-                document.getElementById('upsertType').value = item.type;
-            } else {
-                // ADD MODE
-                title.innerText = 'Add New Equipment';
-                modeInput.value = 'add';
-                idInput.value = `TFS-${String(equipmentData.length + 1).padStart(3, '0')}`; // Auto Generate ID
-                idInput.readOnly = false;
-                idInput.classList.remove('bg-gray-100');
-            }
-            modal.classList.remove('hidden');
+        // Helper: Status Translation
+        function getStatusInfo(status) {
+            if (status === 'available') return { label: 'ว่าง', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' };
+            if (status.includes('pending')) return { label: 'รออนุมัติ', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' };
+            return { label: 'ถูกยืม', bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' };
         }
 
-        async function submitUpsert() {
-            const mode = document.getElementById('upsertMode').value;
-            const id = document.getElementById('upsertId').value;
-            const name = document.getElementById('upsertName').value;
-            const type = document.getElementById('upsertType').value;
-            const fileInput = document.getElementById('upsertFile');
-
-            document.getElementById('loadingOverlay').classList.remove('hidden');
-            closeModal('upsertModal');
-
-            // Handle Image to Base64
-            let imageData = null;
-            let imageName = null;
-
-            if (fileInput.files.length > 0) {
-                try {
-                    const file = fileInput.files[0];
-                    imageName = file.name;
-                    imageData = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = e => resolve(e.target.result); // This is base64
-                        reader.onerror = reject;
-                        reader.readAsDataURL(file);
-                    });
-                } catch (e) {
-                    console.error("Image Error", e);
-                }
-            }
-
-            const payload = {
-                action: mode, // 'add' or 'edit'
-                id: id,
-                name: name,
-                type: type,
-                imageName: imageName,
-                imageData: imageData
-            };
-
-            sendRequest(payload);
-        }
-
-        async function deleteItem(id) {
-            if(!confirm(`Are you sure you want to DELETE ${id}?`)) return;
-            document.getElementById('loadingOverlay').classList.remove('hidden');
-            sendRequest({ action: 'delete', id: id });
-        }
-
-        // --- NORMAL USER FUNCTIONS ---
+        // --- USER ACTIONS ---
         function openBorrowModal(id) {
-            // Admin click does nothing (Admin uses edit buttons)
-            if (isAdmin) return;
+            if(isAdmin) return; // Admin กดเพื่อแก้ไขแทน
 
             const item = equipmentData.find(i => i.id === id);
             selectedItem = item;
             
             if(item.status.includes('pending')) {
-                alert("Item is pending approval.");
+                showAlert('รอการอนุมัติ', 'รายการนี้กำลังรอการอนุมัติจาก Admin ไม่สามารถทำรายการซ้ำได้', 'warning');
                 return;
             }
 
             const modal = document.getElementById('borrowModal');
-            document.getElementById('borrowModalTitle').innerText = item.status === 'available' ? 'Borrow Request' : 'Return Request';
-            document.getElementById('borrowModalSub').innerText = `${item.id} - ${item.name}`;
-            
+            const title = document.getElementById('borrowModalTitle');
+            const sub = document.getElementById('borrowModalSub');
             const field = document.getElementById('borrowerField');
             const input = document.getElementById('borrowerName');
             
+            sub.innerHTML = `<span class="font-bold">${item.id}</span><br>${item.name}`;
+            
             if (item.status === 'available') {
+                title.innerText = 'ขอยืมอุปกรณ์';
                 field.classList.remove('hidden');
                 input.required = true;
                 input.value = '';
             } else {
+                title.innerText = 'แจ้งคืนอุปกรณ์';
                 field.classList.add('hidden');
                 input.required = false;
             }
-            modal.classList.remove('hidden');
+            openModal('borrowModal');
         }
 
         async function submitBorrow() {
@@ -382,27 +355,121 @@
             closeModal('borrowModal');
             document.getElementById('loadingOverlay').classList.remove('hidden');
             
-            sendRequest({
+            const payload = {
                 action: selectedItem.status === 'available' ? 'borrow' : 'return',
                 id: selectedItem.id,
                 borrower: document.getElementById('borrowerName').value
-            });
+            };
+
+            await sendRequest(payload);
         }
 
-        // --- AUTH & HELPER FUNCTIONS ---
+        // --- ADMIN ACTIONS ---
+        function openUpsertModal(editId = null) {
+            const title = document.getElementById('upsertTitle');
+            const modeInput = document.getElementById('upsertMode');
+            const idInput = document.getElementById('upsertId');
+            
+            // Clear
+            document.getElementById('upsertName').value = '';
+            document.getElementById('upsertFile').value = '';
+
+            if (editId) {
+                const item = equipmentData.find(i => i.id === editId);
+                title.innerText = 'แก้ไขอุปกรณ์';
+                modeInput.value = 'edit';
+                idInput.value = item.id;
+                document.getElementById('upsertName').value = item.name;
+                document.getElementById('upsertType').value = item.type;
+            } else {
+                title.innerText = 'เพิ่มอุปกรณ์ใหม่';
+                modeInput.value = 'add';
+                // Auto ID
+                const nextId = equipmentData.length > 0 ? 
+                    Math.max(...equipmentData.map(d => parseInt(d.id.split('-')[1] || 0))) + 1 : 1;
+                idInput.value = `TFS-${String(nextId).padStart(3, '0')}`;
+            }
+            openModal('upsertModal');
+        }
+
+        async function submitUpsert() {
+            const mode = document.getElementById('upsertMode').value;
+            const fileInput = document.getElementById('upsertFile');
+            
+            closeModal('upsertModal');
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+
+            let imageData = null, imageName = null;
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                imageName = file.name;
+                imageData = await new Promise(r => {
+                    const reader = new FileReader();
+                    reader.onload = e => r(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            const payload = {
+                action: mode,
+                id: document.getElementById('upsertId').value,
+                name: document.getElementById('upsertName').value,
+                type: document.getElementById('upsertType').value,
+                imageName: imageName,
+                imageData: imageData
+            };
+
+            await sendRequest(payload);
+        }
+
+        async function deleteItem(id) {
+            // ใช้ Custom Alert แบบมีปุ่ม Confirm (ทำแบบง่ายก่อน)
+            if(!confirm('ยืนยันการลบรายการนี้?')) return; 
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            await sendRequest({ action: 'delete', id: id });
+        }
+
+        async function approve(id, type, decision) {
+            // decision: 'approve' | 'reject'
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            await sendRequest({ action: decision, id: id, type: type });
+        }
+
+        // --- SYSTEM CORE ---
+        async function sendRequest(payload) {
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // สำคัญมากสำหรับ GAS
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                // GAS แบบ no-cors จะไม่คืนค่า response ที่อ่านได้
+                // เราต้องสมมติว่าสำเร็จแล้ว Refresh ข้อมูล
+                setTimeout(() => {
+                    fetchData();
+                    showAlert('สำเร็จ', 'ทำรายการเรียบร้อยแล้ว', 'success');
+                }, 2000);
+
+            } catch (e) {
+                console.error(e);
+                showAlert('เกิดข้อผิดพลาด', 'ไม่สามารถส่งข้อมูลได้', 'error');
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }
+        }
+
+        // UI Helpers
         function toggleAdminLogin() {
             if (isAdmin) {
-                // Logout
                 isAdmin = false;
                 document.getElementById('addBtn').classList.add('hidden');
                 document.getElementById('adminDashboard').classList.add('hidden');
-                document.getElementById('adminText').innerText = 'Admin Login';
                 document.getElementById('adminIcon').innerText = 'admin_panel_settings';
                 renderGrid();
+                showAlert('ออกจากระบบ', 'ออกจากโหมดผู้ดูแลระบบแล้ว', 'success');
             } else {
-                document.getElementById('loginModal').classList.remove('hidden');
-                document.getElementById('adminPass').value = '';
-                document.getElementById('adminPass').focus();
+                openModal('loginModal');
             }
         }
 
@@ -412,12 +479,12 @@
                 closeModal('loginModal');
                 document.getElementById('addBtn').classList.remove('hidden');
                 document.getElementById('adminDashboard').classList.remove('hidden');
-                document.getElementById('adminText').innerText = 'Logout';
                 document.getElementById('adminIcon').innerText = 'logout';
-                renderAdminDashboard();
                 renderGrid();
+                renderAdminDashboard();
+                showAlert('ยินดีต้อนรับ', 'เข้าสู่ระบบ Admin เรียบร้อยแล้ว', 'success');
             } else {
-                alert('Wrong Password');
+                showAlert('ผิดพลาด', 'รหัสผ่านไม่ถูกต้อง', 'error');
             }
         }
 
@@ -425,8 +492,9 @@
             const list = document.getElementById('adminRequestList');
             const noMsg = document.getElementById('noPendingMsg');
             list.innerHTML = '';
-
+            
             const pending = equipmentData.filter(i => i.status.includes('pending'));
+            
             if (pending.length === 0) {
                 noMsg.classList.remove('hidden');
                 return;
@@ -435,52 +503,80 @@
 
             pending.forEach(item => {
                 const isBorrow = item.status === 'pending_borrow';
-                const row = document.createElement('div');
-                row.className = 'p-4 flex justify-between items-center hover:bg-gray-50';
-                row.innerHTML = `
-                    <div>
-                        <div class="text-xs font-bold ${isBorrow ? 'text-blue-600' : 'text-purple-600'} uppercase mb-1">
-                            ${isBorrow ? 'Borrow Request' : 'Return Request'}
-                        </div>
-                        <div class="font-bold text-gray-800">${item.name} <span class="text-gray-400 font-normal">(${item.id})</span></div>
-                        <div class="text-sm text-gray-500">By: ${item.borrower}</div>
+                const div = document.createElement('div');
+                div.className = 'p-3 flex flex-col gap-2 hover:bg-gray-50';
+                div.innerHTML = `
+                    <div class="flex justify-between">
+                        <span class="text-xs font-bold ${isBorrow ? 'text-blue-600' : 'text-yellow-600'} uppercase">
+                            ${isBorrow ? 'คำขอยืม' : 'แจ้งคืน'}
+                        </span>
+                        <span class="text-xs text-gray-400">${item.id}</span>
                     </div>
-                    <div class="flex gap-2">
-                        <button onclick="approve('${item.id}', 'approve', '${isBorrow ? 'borrow':'return'}')" class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700">Approve</button>
-                        <button onclick="approve('${item.id}', 'reject', '${isBorrow ? 'borrow':'return'}')" class="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700">Reject</button>
+                    <div>
+                        <div class="font-bold text-gray-800">${item.name}</div>
+                        <div class="text-sm text-gray-500">โดย: ${item.borrower}</div>
+                    </div>
+                    <div class="flex gap-2 mt-1">
+                        <button onclick="approve('${item.id}', '${isBorrow?'borrow':'return'}', 'approve')" class="flex-1 py-2 bg-green-600 text-white rounded font-bold text-sm shadow">อนุมัติ</button>
+                        <button onclick="approve('${item.id}', '${isBorrow?'borrow':'return'}', 'reject')" class="flex-1 py-2 bg-red-100 text-red-600 rounded font-bold text-sm border border-red-200">ปฏิเสธ</button>
                     </div>
                 `;
-                list.appendChild(row);
+                list.appendChild(div);
             });
         }
 
-        async function approve(id, decision, type) {
-            document.getElementById('loadingOverlay').classList.remove('hidden');
-            sendRequest({ action: decision, id: id, type: type });
+        // Custom Modal Logic
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
         }
 
-        async function sendRequest(payload) {
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                // Since 'no-cors' prevents reading response, we assume success after a short delay
-                setTimeout(() => {
-                    alert('Success!');
-                    fetchData();
-                }, 2000);
-            } catch (e) {
-                console.error(e);
-                alert('Error sending request');
-                document.getElementById('loadingOverlay').classList.add('hidden');
+        // Custom Alert Logic
+        function showAlert(title, message, type) {
+            const modal = document.getElementById('alertModal');
+            const icon = document.getElementById('alertIcon');
+            const titleEl = document.getElementById('alertTitle');
+            const bg = modal.querySelector('.bg-schindler-red');
+            
+            document.getElementById('alertMessage').innerText = message;
+            titleEl.innerText = title;
+
+            if (type === 'success') {
+                icon.innerText = 'check_circle';
+                bg.className = 'bg-green-600 p-4 flex items-center justify-center';
+            } else if (type === 'error') {
+                icon.innerText = 'error';
+                bg.className = 'bg-schindler-red p-4 flex items-center justify-center';
+            } else {
+                icon.innerText = 'info';
+                bg.className = 'bg-gray-800 p-4 flex items-center justify-center';
             }
+            
+            modal.classList.remove('hidden');
+        }
+        function closeAlert() {
+            document.getElementById('alertModal').classList.add('hidden');
         }
 
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function setFilter(f) { currentFilter = f; document.querySelectorAll('.filter-btn').forEach(b => { b.classList.remove('bg-gray-800','text-white'); b.classList.add('bg-gray-200','text-gray-600'); }); event.target.classList.remove('bg-gray-200','text-gray-600'); event.target.classList.add('bg-gray-800','text-white'); renderGrid(); }
+        function setFilter(f) { 
+            currentFilter = f; 
+            document.querySelectorAll('.filter-btn').forEach(b => { 
+                b.classList.remove('bg-gray-800','text-white', 'shadow-sm'); 
+                b.classList.add('bg-gray-100','text-gray-600', 'border', 'border-gray-200'); 
+            }); 
+            event.target.classList.remove('bg-gray-100','text-gray-600', 'border', 'border-gray-200'); 
+            event.target.classList.add('bg-gray-800','text-white', 'shadow-sm'); 
+            renderGrid(); 
+        }
+
+        function updateStats() {
+            document.getElementById('totalCount').innerText = equipmentData.length;
+            document.getElementById('availableCount').innerText = equipmentData.filter(i => i.status === 'available').length;
+            document.getElementById('borrowedCount').innerText = equipmentData.filter(i => i.status !== 'available').length; // รวม pending ด้วย
+            document.getElementById('pendingCount').innerText = equipmentData.filter(i => i.status.includes('pending')).length;
+        }
     </script>
 </body>
 </html>
