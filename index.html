@@ -1,630 +1,619 @@
+
+
 <!doctype html>
 <html lang="th" class="h-full">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TFS Equipment System</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        schindler: {
-                            red: '#E2001A',
-                            dark: '#000000',
-                            gray: '#F2F2F2',
-                        }
-                    },
-                    fontFamily: { sans: ['Kanit', 'sans-serif'] }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { background-color: #F8F9FA; -webkit-tap-highlight-color: transparent; }
-        .sch-card { background: white; border: 1px solid #e5e7eb; border-radius: 8px; transition: all 0.2s ease; }
-        .sch-card:active { transform: scale(0.98); }
-        .btn-touch { min-height: 50px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #E2001A; border-radius: 2px; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Schindler Equipment System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        schindler: { red: '#E2001A', dark: '#1A1A1A' }
+                    },
+                    fontFamily: { sans: ['Kanit', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F3F4F6; -webkit-tap-highlight-color: transparent; }
+        .btn-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s; }
+        .btn-icon:active { transform: scale(0.95); }
+        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        
+        /* Loading Spinner */
+        .spinner { border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid #E2001A; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
 <body class="h-full flex flex-col text-gray-800">
 
-    <header class="bg-black text-white shadow-md sticky top-0 z-40 border-b-4 border-schindler-red">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex flex-col leading-none">
-                <span class="text-2xl font-bold tracking-wider">Schindler</span>
-                <span class="text-[10px] text-gray-400 uppercase tracking-[0.2em]">TFS Equipment System</span>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="openHelpModal()" class="p-2 bg-gray-800 rounded-full hover:bg-gray-700 transition">
-                    <span class="material-icons text-white text-sm">help_outline</span>
-                </button>
-                <button onclick="toggleAdminLogin()" class="p-2 bg-gray-900 rounded-full hover:bg-gray-800 transition">
-                    <span class="material-icons text-white text-sm" id="adminIcon">admin_panel_settings</span>
-                </button>
-            </div>
-        </div>
-    </header>
+    <header class="bg-black text-white shadow-lg sticky top-0 z-40 border-b-4 border-schindler-red">
+        <div class="max-w-lg mx-auto px-4 h-16 flex items-center justify-between">
+            <div>
+                <h1 class="text-xl font-bold tracking-wider">Schindler</h1>
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest">TFS Equipment</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="openHelp()" class="btn-icon bg-gray-800 hover:bg-gray-700">
+                    <span class="material-icons text-white">help_outline</span>
+                </button>
+                <button onclick="toggleAdmin()" class="btn-icon bg-gray-800 hover:bg-gray-700">
+                    <span class="material-icons text-white" id="adminIcon">admin_panel_settings</span>
+                </button>
+            </div>
+        </div>
+    </header>
 
-    <main class="flex-1 overflow-auto p-4 pb-24">
-        <div class="max-w-lg mx-auto space-y-4">
-            
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-white p-3 rounded-lg border-l-4 border-gray-800 shadow-sm">
-                    <div class="text-xs text-gray-500 font-bold">ทั้งหมด</div>
-                    <div class="text-2xl font-bold mt-1" id="totalCount">0</div>
-                </div>
-                <div class="bg-white p-3 rounded-lg border-l-4 border-green-500 shadow-sm">
-                    <div class="text-xs text-gray-500 font-bold">ว่าง / พร้อมใช้</div>
-                    <div class="text-2xl font-bold text-green-600 mt-1" id="availableCount">0</div>
-                </div>
-                <div class="bg-white p-3 rounded-lg border-l-4 border-yellow-500 shadow-sm">
-                    <div class="text-xs text-gray-500 font-bold">ถูกยืม</div>
-                    <div class="text-2xl font-bold text-yellow-600 mt-1" id="borrowedCount">0</div>
-                </div>
-                <div class="bg-white p-3 rounded-lg border-l-4 border-blue-500 shadow-sm">
-                    <div class="text-xs text-gray-500 font-bold">รออนุมัติ</div>
-                    <div class="text-2xl font-bold text-blue-600 mt-1" id="pendingCount">0</div>
-                </div>
-            </div>
+    <main class="flex-1 overflow-auto p-4 pb-24">
+        <div class="max-w-lg mx-auto space-y-5">
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white p-4 rounded-xl card-shadow border-l-4 border-gray-800">
+                    <span class="text-xs text-gray-500 font-bold block">ทั้งหมด</span>
+                    <span class="text-2xl font-bold" id="countTotal">0</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl card-shadow border-l-4 border-green-500">
+                    <span class="text-xs text-gray-500 font-bold block">ว่าง</span>
+                    <span class="text-2xl font-bold text-green-600" id="countAvail">0</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl card-shadow border-l-4 border-yellow-500">
+                    <span class="text-xs text-gray-500 font-bold block">ถูกยืม</span>
+                    <span class="text-2xl font-bold text-yellow-600" id="countBorrow">0</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl card-shadow border-l-4 border-blue-500">
+                    <span class="text-xs text-gray-500 font-bold block">รออนุมัติ</span>
+                    <span class="text-2xl font-bold text-blue-600" id="countPending">0</span>
+                </div>
+            </div>
 
-            <div id="adminDashboard" class="hidden animate-fade-in">
-                <div class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
-                    <div class="p-3 bg-red-50 border-b border-red-100 flex justify-between items-center">
-                        <h3 class="font-bold text-schindler-red flex items-center gap-2 text-sm">
-                            <span class="material-icons text-base">notifications_active</span> รายการรออนุมัติ
-                        </h3>
-                    </div>
-                    <div id="adminRequestList" class="divide-y divide-gray-100"></div>
-                    <div id="noPendingMsg" class="hidden p-6 text-center text-gray-400 text-sm">ไม่มีรายการรออนุมัติ</div>
-                </div>
-            </div>
+            <div id="adminPanel" class="hidden">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
+                    <div class="bg-red-50 p-3 border-b border-red-100 flex items-center gap-2">
+                        <span class="material-icons text-schindler-red text-sm">notifications_active</span>
+                        <span class="font-bold text-sm text-gray-700">รายการรออนุมัติ</span>
+                    </div>
+                    <div id="requestList" class="divide-y divide-gray-100"></div>
+                    <div id="noRequestMsg" class="p-6 text-center text-gray-400 text-sm hidden">ไม่มีรายการใหม่</div>
+                </div>
+            </div>
 
-            <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-200 sticky top-0 z-30">
-                <div class="relative mb-3">
-                    <span class="material-icons absolute left-3 top-2.5 text-gray-400">search</span>
-                    <input type="text" id="searchInput" placeholder="ค้นหา..." 
-                           class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:border-schindler-red focus:ring-1 focus:ring-schindler-red outline-none transition"
-                           oninput="renderGrid()">
-                </div>
-                <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-                    <button onclick="setFilter('all')" class="filter-btn flex-1 min-w-[80px] py-2 rounded-lg text-sm font-medium bg-gray-800 text-white shadow-sm">ทั้งหมด</button>
-                    <button onclick="setFilter('available')" class="filter-btn flex-1 min-w-[80px] py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 border">ว่าง</button>
-                    <button onclick="setFilter('borrowed')" class="filter-btn flex-1 min-w-[80px] py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 border">ถูกยืม</button>
-                </div>
-            </div>
+            <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-200 sticky top-0 z-30">
+                <div class="relative mb-2">
+                    <span class="material-icons absolute left-3 top-2.5 text-gray-400">search</span>
+                    <input type="text" id="searchInput" placeholder="ค้นหาอุปกรณ์..." 
+                           class="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg focus:ring-1 focus:ring-schindler-red outline-none text-sm transition"
+                           oninput="renderGrid()">
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="filter('all')" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-gray-800 text-white transition" id="btnAll">ทั้งหมด</button>
+                    <button onclick="filter('available')" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 transition" id="btnAvail">ว่าง</button>
+                    <button onclick="filter('borrowed')" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 transition" id="btnBorrow">ถูกยืม</button>
+                </div>
+            </div>
 
-            <div id="equipmentGrid" class="grid grid-cols-1 gap-4"></div>
-        </div>
-    </main>
+            <div id="grid" class="space-y-3">
+                </div>
+            
+            <div id="loadingState" class="py-10 text-center text-gray-400 hidden">
+                <div class="spinner mx-auto mb-2"></div>
+                <span class="text-xs">กำลังโหลดข้อมูล...</span>
+            </div>
+        </div>
+    </main>
 
-    <button id="addBtn" onclick="openUpsertModal()" class="hidden fixed bottom-6 right-6 w-14 h-14 bg-schindler-red text-white rounded-full shadow-lg hover:bg-red-700 transition flex items-center justify-center z-40">
-        <span class="material-icons text-3xl">add</span>
-    </button>
+    <button id="addBtn" onclick="openUpsert()" class="hidden fixed bottom-6 right-6 w-14 h-14 bg-schindler-red text-white rounded-full shadow-xl flex items-center justify-center z-40 active:scale-90 transition">
+        <span class="material-icons text-3xl">add</span>
+    </button>
 
-    <div id="helpModal" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-xl shadow-2xl h-[80vh] flex flex-col">
-            <div class="p-4 bg-gray-800 text-white rounded-t-xl flex justify-between items-center">
-                <h3 class="font-bold flex items-center gap-2"><span class="material-icons">menu_book</span> คู่มือการใช้งาน</h3>
-                <button onclick="closeModal('helpModal')"><span class="material-icons">close</span></button>
-            </div>
-            <div class="p-4 overflow-y-auto flex-1 space-y-4">
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <h4 class="font-bold text-schindler-red mb-2 flex items-center gap-2">
-                        <span class="material-icons text-sm">person</span> สำหรับผู้ใช้งาน
-                    </h4>
-                    <ul class="text-sm text-gray-600 space-y-2 list-disc pl-4">
-                        <li><b>การยืม:</b> คลิกที่อุปกรณ์ (สีเขียว) > กรอกชื่อ > ถ่ายรูปยืนยัน > กดส่ง</li>
-                        <li><b>การคืน:</b> คลิกที่อุปกรณ์ (สีเหลือง) > ถ่ายรูปยืนยัน > กดส่ง</li>
-                        <li>หลังจากส่งคำขอ ต้องรอ Admin อนุมัติก่อน</li>
-                    </ul>
-                </div>
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <h4 class="font-bold text-black mb-2 flex items-center gap-2">
-                        <span class="material-icons text-sm">admin_panel_settings</span> สำหรับผู้ดูแลระบบ
-                    </h4>
-                    <ul class="text-sm text-gray-600 space-y-2 list-disc pl-4">
-                        <li><b>เข้าสู่ระบบ:</b> กดปุ่มรูปคนมุมขวาบน ใส่รหัสผ่าน</li>
-                        <li><b>อนุมัติ:</b> รายการขอจะขึ้นที่ด้านบนสุด กด "อนุมัติ" หรือ "ปฏิเสธ"</li>
-                        <li><b>เพิ่มอุปกรณ์:</b> กดปุ่ม + สีแดงมุมขวาล่าง</li>
-                        <li><b>แก้ไข/ลบ:</b> กดปุ่มดินสอหรือถังขยะบนการ์ดอุปกรณ์</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="actionModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end md:items-center justify-center">
+        <div class="bg-white w-full md:max-w-md rounded-t-2xl md:rounded-2xl p-6 animate-slide-up">
+            <h3 class="text-xl font-bold mb-1" id="actTitle">Title</h3>
+            <p class="text-xs text-gray-500 mb-4 bg-gray-100 p-2 rounded" id="actSub">Detail</p>
+            
+            <form onsubmit="event.preventDefault(); submitAction();">
+                <div id="borrowerGroup" class="mb-4">
+                    <label class="text-xs font-bold text-gray-500 uppercase">ชื่อผู้ยืม</label>
+                    <input type="text" id="actName" class="w-full mt-1 p-3 border rounded-lg focus:border-schindler-red outline-none bg-gray-50" placeholder="ระบุชื่อของคุณ">
+                </div>
 
-    <div id="borrowModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center sm:p-4">
-        <div class="bg-white w-full md:max-w-md md:rounded-xl rounded-t-2xl shadow-2xl p-6 border-t-4 border-schindler-red max-h-[90vh] overflow-y-auto">
-            <h3 class="text-xl font-bold mb-1" id="borrowModalTitle">ทำรายการ</h3>
-            <p class="text-gray-500 text-sm mb-4" id="borrowModalSub">...</p>
-            
-            <form onsubmit="event.preventDefault(); submitBorrow();">
-                <div id="borrowerField" class="mb-4">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">ชื่อช่าง / ผู้ยืม</label>
-                    <input type="text" id="borrowerName" class="w-full p-3 border border-gray-300 rounded-lg focus:border-schindler-red outline-none" placeholder="ระบุชื่อของคุณ">
-                </div>
+                <div class="mb-6">
+                    <label class="text-xs font-bold text-gray-500 uppercase block mb-2">ถ่ายรูปยืนยัน</label>
+                    
+                    <div id="actPreviewBox" class="hidden mb-2 relative rounded-lg overflow-hidden border border-gray-300 bg-gray-100 h-48">
+                        <img id="actPreview" class="w-full h-full object-contain">
+                        <button type="button" onclick="clearImage('act')" class="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 shadow">
+                            <span class="material-icons text-sm block">close</span>
+                        </button>
+                    </div>
 
-                <div class="mb-6">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">ถ่ายรูปอุปกรณ์ยืนยัน</label>
-                    
-                    <div id="borrowPreviewContainer" class="hidden mb-3 relative">
-                        <img id="borrowPreviewImg" class="w-full h-48 object-cover rounded-lg border border-gray-300">
-                        <button type="button" onclick="clearBorrowImage()" class="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full shadow"><span class="material-icons text-sm">close</span></button>
-                    </div>
+                    <label class="flex flex-col items-center justify-center h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                        <span class="material-icons text-gray-400">camera_alt</span>
+                        <span class="text-xs text-gray-500 mt-1">แตะเพื่อถ่ายรูป</span>
+                        <input type="file" id="actFile" accept="image/*" class="hidden" onchange="handleImage(this, 'actPreview', 'actPreviewBox')">
+                    </label>
+                </div>
 
-                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition" onclick="document.getElementById('borrowFile').click()">
-                        <span class="material-icons text-gray-400 text-3xl">add_a_photo</span>
-                        <p class="text-xs text-gray-500 mt-1">แตะเพื่อถ่ายรูป / เลือกรูป</p>
-                    </div>
-                    <input type="file" id="borrowFile" accept="image/*" class="hidden" onchange="previewImage(this, 'borrowPreviewImg', 'borrowPreviewContainer')">
-                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeModal('actionModal')" class="flex-1 py-3 bg-gray-200 rounded-lg font-bold text-gray-700">ยกเลิก</button>
+                    <button type="submit" class="flex-1 py-3 bg-schindler-red text-white rounded-lg font-bold shadow-lg">ยืนยัน</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-                <div class="flex gap-3">
-                    <button type="button" onclick="closeModal('borrowModal')" class="flex-1 btn-touch bg-gray-200 text-gray-700 rounded-lg font-bold">ยกเลิก</button>
-                    <button type="submit" class="flex-1 btn-touch bg-schindler-red text-white rounded-lg font-bold shadow-md">ยืนยัน</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <div id="loginModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+            <h3 class="text-xl font-bold text-center mb-6">Admin Login</h3>
+            <form onsubmit="event.preventDefault(); doLogin();">
+                <div class="relative mb-4">
+                    <input type="password" id="loginPass" class="w-full p-3 pr-10 border rounded-lg focus:border-schindler-red outline-none text-center tracking-widest" placeholder="Passcode">
+                    <button type="button" onclick="togglePass()" class="absolute right-3 top-3 text-gray-400">
+                        <span class="material-icons" id="eyeIcon">visibility</span>
+                    </button>
+                </div>
+                <button type="submit" class="w-full py-3 bg-black text-white rounded-lg font-bold">เข้าสู่ระบบ</button>
+                <button type="button" onclick="closeModal('loginModal')" class="w-full mt-3 py-2 text-gray-400 text-sm">ยกเลิก</button>
+            </form>
+        </div>
+    </div>
 
-    <div id="loginModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-xl shadow-2xl p-6">
-            <h3 class="text-xl font-bold text-center mb-6">Admin Access</h3>
-            <form onsubmit="event.preventDefault(); submitLogin();">
-                <div class="relative mb-4">
-                    <input type="password" id="adminPass" placeholder="รหัสผ่าน" class="w-full p-3 border border-gray-300 rounded-lg focus:border-schindler-red outline-none pr-10">
-                    <button type="button" onclick="togglePassword()" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
-                        <span class="material-icons" id="passIcon">visibility</span>
-                    </button>
-                </div>
-                <button type="submit" class="w-full btn-touch bg-black text-white rounded-lg font-bold">เข้าสู่ระบบ</button>
-                <button type="button" onclick="closeModal('loginModal')" class="w-full mt-3 py-2 text-gray-400 text-sm">ยกเลิก</button>
-            </form>
-        </div>
-    </div>
+    <div id="upsertModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end md:items-center justify-center">
+        <div class="bg-white w-full md:max-w-md rounded-t-2xl md:rounded-2xl p-6 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-bold mb-4" id="upTitle">เพิ่มอุปกรณ์</h3>
+            <form onsubmit="event.preventDefault(); submitUpsert();">
+                <input type="hidden" id="upMode" value="add">
+                
+                <div class="space-y-4 mb-6">
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase">รหัส (Auto)</label>
+                        <input type="text" id="upId" class="w-full mt-1 p-3 bg-gray-100 border rounded-lg text-gray-500" readonly>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase">ชื่ออุปกรณ์</label>
+                        <input type="text" id="upName" class="w-full mt-1 p-3 border rounded-lg focus:border-schindler-red outline-none" required>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase">หมวดหมู่</label>
+                        <select id="upType" class="w-full mt-1 p-3 border rounded-lg bg-white">
+                            <option value="General">ทั่วไป</option>
+                            <option value="Power Tool">เครื่องมือไฟฟ้า</option>
+                            <option value="Safety">ความปลอดภัย</option>
+                            <option value="IT">อุปกรณ์ไอที</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase block mb-2">รูปภาพ</label>
+                        <div id="upPreviewBox" class="hidden mb-2 relative rounded-lg overflow-hidden border border-gray-300 bg-gray-100 h-48">
+                            <img id="upPreview" class="w-full h-full object-contain">
+                            <button type="button" onclick="clearImage('up')" class="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 shadow">
+                                <span class="material-icons text-sm block">close</span>
+                            </button>
+                        </div>
+                        <label class="flex flex-col items-center justify-center h-20 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                            <span class="material-icons text-gray-400">add_photo_alternate</span>
+                            <span class="text-xs text-gray-500">เลือกรูปภาพ</span>
+                            <input type="file" id="upFile" accept="image/*" class="hidden" onchange="handleImage(this, 'upPreview', 'upPreviewBox')">
+                        </label>
+                    </div>
+                </div>
 
-    <div id="upsertModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center sm:p-4">
-        <div class="bg-white w-full md:max-w-md md:rounded-xl rounded-t-2xl shadow-2xl p-6 h-[85vh] md:h-auto overflow-y-auto">
-            <h3 class="text-xl font-bold mb-6" id="upsertTitle">จัดการอุปกรณ์</h3>
-            <form onsubmit="event.preventDefault(); submitUpsert();">
-                <input type="hidden" id="upsertMode" value="add">
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">รหัส</label>
-                        <input type="text" id="upsertId" class="w-full p-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-500" readonly>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">ชื่ออุปกรณ์</label>
-                        <input type="text" id="upsertName" class="w-full p-3 border border-gray-300 rounded-lg focus:border-schindler-red outline-none" required>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">หมวดหมู่</label>
-                        <select id="upsertType" class="w-full p-3 border border-gray-300 rounded-lg bg-white">
-                            <option value="Power Tool">Power Tool</option>
-                            <option value="Measurement">Measurement</option>
-                            <option value="Safety">Safety</option>
-                            <option value="IT">IT</option>
-                            <option value="General">General</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">รูปภาพ</label>
-                         
-                         <div id="upsertPreviewContainer" class="hidden mb-3 relative">
-                            <img id="upsertPreviewImg" class="w-full h-48 object-cover rounded-lg border border-gray-300">
-                             <button type="button" onclick="clearUpsertImage()" class="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full shadow"><span class="material-icons text-sm">close</span></button>
-                        </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeModal('upsertModal')" class="flex-1 py-3 bg-gray-200 rounded-lg font-bold text-gray-700">ยกเลิก</button>
+                    <button type="submit" class="flex-1 py-3 bg-schindler-red text-white rounded-lg font-bold shadow-lg">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50" onclick="document.getElementById('upsertFile').click()">
-                            <span class="material-icons text-gray-400">add_photo_alternate</span>
-                            <p class="text-xs text-gray-500">เลือกรูปภาพ</p>
-                        </div>
-                        <input type="file" id="upsertFile" accept="image/*" class="hidden" onchange="previewImage(this, 'upsertPreviewImg', 'upsertPreviewContainer')">
-                    </div>
-                </div>
+    <div id="helpModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-0 overflow-hidden shadow-2xl">
+            <div class="bg-black p-4 flex justify-between items-center text-white">
+                <span class="font-bold flex items-center gap-2"><span class="material-icons text-sm">menu_book</span> คู่มือการใช้งาน</span>
+                <button onclick="closeModal('helpModal')"><span class="material-icons">close</span></button>
+            </div>
+            <div class="p-5 max-h-[60vh] overflow-y-auto text-sm space-y-4">
+                <div>
+                    <h4 class="font-bold text-schindler-red mb-1">👤 ผู้ใช้งานทั่วไป</h4>
+                    <ul class="list-disc pl-5 text-gray-600 space-y-1">
+                        <li><b>ยืมของ:</b> กดที่การ์ด (สีเขียว) > ใส่ชื่อ > ถ่ายรูป > กดยืนยัน</li>
+                        <li><b>คืนของ:</b> กดที่การ์ด (สีเหลือง) > ถ่ายรูป > กดยืนยัน</li>
+                        <li>สถานะจะเปลี่ยนเป็น "รออนุมัติ" จนกว่า Admin จะกดรับ</li>
+                    </ul>
+                </div>
+                <div class="border-t pt-3">
+                    <h4 class="font-bold text-black mb-1">🛡️ Admin</h4>
+                    <ul class="list-disc pl-5 text-gray-600 space-y-1">
+                        <li><b>Login:</b> กดปุ่มโล่ > ใส่รหัสผ่าน</li>
+                        <li><b>อนุมัติ:</b> รายการจะขึ้นด้านบน กด ✓ เพื่ออนุมัติ หรือ ✕ เพื่อปฏิเสธ</li>
+                        <li><b>เพิ่มของ:</b> กดปุ่ม + สีแดงมุมขวาล่าง</li>
+                        <li><b>แก้ไข/ลบ:</b> กดปุ่มดินสอ/ถังขยะ บนการ์ด</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                <div class="flex gap-3 mt-8">
-                    <button type="button" onclick="closeModal('upsertModal')" class="flex-1 btn-touch bg-gray-100 text-gray-600 rounded-lg font-bold">ยกเลิก</button>
-                    <button type="submit" class="flex-1 btn-touch bg-schindler-red text-white rounded-lg font-bold shadow-md">บันทึก</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <div id="busyOverlay" class="fixed inset-0 z-[100] bg-white/90 flex flex-col items-center justify-center hidden">
+        <div class="spinner border-t-schindler-red mb-3"></div>
+        <p class="text-sm font-bold text-gray-600 animate-pulse">กำลังบันทึกข้อมูล...</p>
+        <p class="text-xs text-gray-400 mt-1">กรุณารอสักครู่ (อาจใช้เวลาอัปโหลดรูป)</p>
+    </div>
 
-    <div id="alertModal" class="hidden fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-xl shadow-2xl overflow-hidden animate-bounce-in">
-            <div class="bg-schindler-red p-4 flex items-center justify-center">
-                <span class="material-icons text-white text-4xl" id="alertIcon">info</span>
-            </div>
-            <div class="p-6 text-center">
-                <h3 class="text-xl font-bold text-gray-800 mb-2" id="alertTitle">แจ้งเตือน</h3>
-                <p class="text-gray-600 mb-6" id="alertMessage">...</p>
-                <button onclick="document.getElementById('alertModal').classList.add('hidden')" class="w-full btn-touch bg-black text-white rounded-lg font-bold">ตกลง</button>
-            </div>
-        </div>
-    </div>
+    <script>
+        // ==========================================
+        // 🔧 ตั้งค่า URL (สำคัญมาก!)
+        // ==========================================
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyqvw1_LfK1S2VOdcgK4Mb4-DKu8TwbJ8zMjjoegOnDFkYXKl37EDIdbsq-LHIc3Pzh/exec'; // << เอา URL ใหม่มาใส่
+        const ADMIN_CODE = 'jiraphong2227';
+        // ==========================================
 
-    <div id="loadingOverlay" class="fixed inset-0 bg-white/90 backdrop-blur-sm z-[80] flex flex-col items-center justify-center hidden">
-        <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-schindler-red"></div>
-        <div class="mt-4 text-gray-800 font-bold animate-pulse">กำลังดำเนินการ...</div>
-    </div>
+        let items = [];
+        let filterType = 'all';
+        let isAdmin = false;
+        let selectedItem = null;
 
-    <script>
-        // ----------------------------------------------------
-        // IMPORTANT: ใส่ URL Web App ใหม่ที่นี่
-        // ----------------------------------------------------
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyWDidEfpKqFnFAk_zmw6DnlDPCrYVsNsSY433DH5-je5yhbFNJMUmXU1u04pA0ruFJ/exec'; // << แก้ตรงนี้
-        const ADMIN_PASSWORD = 'jiraphong2227';
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', loadData);
 
-        let equipmentData = [];
-        let currentFilter = 'all';
-        let isAdmin = false;
-        let selectedItem = null;
+        // --- Core Functions ---
+        async function loadData() {
+            document.getElementById('loadingState').classList.remove('hidden');
+            try {
+                // ใช้ POST เสมอเพื่อเลี่ยงปัญหา GET Cache และ Parameter ยาว
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'read' })
+                });
+                const data = await res.json();
+                
+                if (data.status === 'error') throw new Error(data.message);
+                
+                items = Array.isArray(data) ? data : [];
+                render();
+            } catch (err) {
+                console.error(err);
+                alert("การเชื่อมต่อล้มเหลว: " + err.message + "\n\nกรุณาตรวจสอบ URL หรือลองใหม่อีกครั้ง");
+            } finally {
+                document.getElementById('loadingState').classList.add('hidden');
+            }
+        }
 
-        document.addEventListener('DOMContentLoaded', fetchData);
+        async function postData(payload) {
+            document.getElementById('busyOverlay').classList.remove('hidden');
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                    // ไม่ใส่ headers Content-Type เพื่อให้ browser จัดการ (ป้องกัน preflight ในบางกรณี)
+                    // แต่ GAS รับ text/plain ได้ดีที่สุด
+                });
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    await loadData(); // โหลดข้อมูลใหม่
+                    return true;
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('เกิดข้อผิดพลาด: ' + err.message);
+                return false;
+            } finally {
+                document.getElementById('busyOverlay').classList.add('hidden');
+            }
+        }
 
-        // --- Core Functions ---
+        // --- UI Rendering ---
+        function render() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            
+            // Stats
+            document.getElementById('countTotal').innerText = items.length;
+            document.getElementById('countAvail').innerText = items.filter(x => x.status === 'available').length;
+            document.getElementById('countBorrow').innerText = items.filter(x => x.status !== 'available').length;
+            document.getElementById('countPending').innerText = items.filter(x => x.status.includes('pending')).length;
 
-        async function fetchData() {
-            document.getElementById('loadingOverlay').classList.remove('hidden');
-            try {
-                // เปลี่ยนเป็น POST เพื่อความชัวร์ (บางที GET แคช)
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'read' })
-                });
-                const data = await res.json();
-                
-                if(data.status === 'error') throw new Error(data.message);
-                
-                equipmentData = Array.isArray(data) ? data : [];
-                renderGrid();
-                updateStats();
-                if(isAdmin) renderAdminDashboard();
-                
-            } catch (e) {
-                console.error(e);
-                showAlert('การเชื่อมต่อล้มเหลว', 'กรุณาตรวจสอบ URL หรืออินเทอร์เน็ต', 'error');
-            } finally {
-                document.getElementById('loadingOverlay').classList.add('hidden');
-            }
-        }
+            // Admin Requests
+            if (isAdmin) renderAdminRequests();
+            // Filter
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = items.filter(x => {
+                const matchText = x.name.toLowerCase().includes(term) || x.id.toLowerCase().includes(term);
+                let matchType = true;
+                if (filterType === 'available') matchType = x.status === 'available';
+                if (filterType === 'borrowed') matchType = x.status !== 'available';
+                return matchText && matchType;
+            });
 
-        async function sendRequest(payload) {
-            document.getElementById('loadingOverlay').classList.remove('hidden');
-            try {
-                // ส่งแบบ text/plain เพื่อเลี่ยง CORS Preflight
-                await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                
-                // รอสักพักแล้วโหลดใหม่ (เพราะเราอ่าน Response ไม่ได้ในบางกรณี)
-                setTimeout(() => {
-                    fetchData();
-                    showAlert('สำเร็จ', 'บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
-                }, 2500);
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="text-center text-gray-400 py-10 text-sm">ไม่พบข้อมูล</div>';
+                return;
+            }
 
-            } catch (e) {
-                console.error(e);
-                showAlert('เกิดข้อผิดพลาด', 'ไม่สามารถส่งข้อมูลได้', 'error');
-                document.getElementById('loadingOverlay').classList.add('hidden');
-            }
-        }
+            filtered.forEach(x => {
+                const isAvail = x.status === 'available';
+                const statusMap = {
+                    'available': { t: 'ว่าง', c: 'bg-green-100 text-green-700' },
+                    'borrowed': { t: 'ถูกยืม', c: 'bg-yellow-100 text-yellow-700' },
+                    'pending_borrow': { t: 'รออนุมัติ', c: 'bg-blue-100 text-blue-700' },
+                    'pending_return': { t: 'รอตรวจสอบ', c: 'bg-purple-100 text-purple-700' }
+                };
+                const st = statusMap[x.status] || { t: x.status, c: 'bg-gray-100' };
 
-        // --- Image Preview Logic ---
+                let adminTools = '';
+                if (isAdmin) {
+                    adminTools = `
+                        <div class="absolute top-2 right-2 flex gap-1 z-10">
+                            <button onclick="event.stopPropagation(); editItem('${x.id}')" class="bg-white p-1.5 rounded-full shadow text-blue-600"><span class="material-icons text-sm">edit</span></button>
+                            <button onclick="event.stopPropagation(); deleteItem('${x.id}')" class="bg-white p-1.5 rounded-full shadow text-red-600"><span class="material-icons text-sm">delete</span></button>
+                        </div>
+                    `;
+                }
 
-        function previewImage(input, imgId, containerId) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById(imgId).src = e.target.result;
-                    document.getElementById(containerId).classList.remove('hidden');
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
+                const imgHtml = x.photoUrl ? 
+                    `<img src="${x.photoUrl}" class="w-full h-full object-cover">` : 
+                    `<div class="w-full h-full flex items-center justify-center bg-gray-200"><span class="material-icons text-gray-400">image</span></div>`;
 
-        function clearBorrowImage() {
-            document.getElementById('borrowFile').value = '';
-            document.getElementById('borrowPreviewContainer').classList.add('hidden');
-        }
+                grid.innerHTML += `
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex h-28 relative active:scale-[0.99] transition" onclick="clickItem('${x.id}')">
+                        ${adminTools}
+                        <div class="w-28 bg-gray-100 flex-shrink-0">
+                            ${imgHtml}
+                        </div>
+                        <div class="flex-1 p-3 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="text-[10px] text-gray-400 font-mono tracking-wider">${x.id}</span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full ${st.c} font-bold">${st.t}</span>
+                                </div>
+                                <h4 class="font-bold text-gray-800 text-sm line-clamp-2 leading-tight">${x.name}</h4>
+                            </div>
+                            ${!isAvail ? `<div class="text-xs text-gray-500 flex items-center gap-1"><span class="material-icons text-[12px]">person</span> ${x.borrower}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+        }
 
-        function clearUpsertImage() {
-             document.getElementById('upsertFile').value = '';
-             document.getElementById('upsertPreviewContainer').classList.add('hidden');
-        }
+        function renderAdminRequests() {
+            const list = document.getElementById('requestList');
+            const box = document.getElementById('adminPanel');
+            const noMsg = document.getElementById('noRequestMsg');
+            
+            list.innerHTML = '';
+            const pendings = items.filter(x => x.status.includes('pending'));
+            
+            box.classList.remove('hidden');
+            if (pendings.length === 0) {
+                noMsg.classList.remove('hidden');
+                return;
+            }
+            noMsg.classList.add('hidden');
 
-        // --- Password Toggle ---
-        function togglePassword() {
-            const input = document.getElementById('adminPass');
-            const icon = document.getElementById('passIcon');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.innerText = 'visibility_off';
-            } else {
-                input.type = 'password';
-                icon.innerText = 'visibility';
-            }
-        }
+            pendings.forEach(x => {
+                const isBorrow = x.status === 'pending_borrow';
+                const typeText = isBorrow ? 'ขอเบิก' : 'แจ้งคืน';
+                const typeColor = isBorrow ? 'text-blue-600' : 'text-purple-600';
+                
+                list.innerHTML += `
+                    <div class="p-3 bg-white">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-bold ${typeColor}">${typeText}</span>
+                            <span class="text-xs text-gray-400">${x.id}</span>
+                        </div>
+                        <div class="font-bold text-sm text-gray-800">${x.name}</div>
+                        <div class="text-xs text-gray-500 mb-2">โดย: ${x.borrower}</div>
+                        ${x.photoUrl ? `<a href="${x.photoUrl}" target="_blank" class="text-xs text-blue-500 underline mb-2 block">ดูรูปยืนยัน</a>` : ''}
+                        <div class="flex gap-2">
+                            <button onclick="approve('${x.id}', '${isBorrow?'borrow':'return'}')" class="flex-1 bg-green-600 text-white text-xs py-1.5 rounded font-bold">อนุมัติ</button>
+                            <button onclick="reject('${x.id}', '${isBorrow?'borrow':'return'}')" class="flex-1 bg-gray-200 text-gray-600 text-xs py-1.5 rounded font-bold">ปฏิเสธ</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
 
-        // --- User Actions ---
+        // --- Interaction ---
+        function clickItem(id) {
+            if (isAdmin) return; // Admin กดเพื่อแก้ไขไม่ได้ (ต้องกดปุ่มดินสอ)
+            const item = items.find(x => x.id === id);
+            selectedItem = item;
 
-        function openBorrowModal(id) {
-            if(isAdmin) return; 
+            if (item.status.includes('pending')) {
+                alert('รายการนี้รอการตรวจสอบอยู่ ไม่สามารถทำรายการซ้ำได้');
+                return;
+            }
 
-            const item = equipmentData.find(i => i.id === id);
-            selectedItem = item;
-            
-            if(item.status.includes('pending')) {
-                showAlert('แจ้งเตือน', 'รายการนี้กำลังรออนุมัติ', 'warning');
-                return;
-            }
+            // Setup Modal
+            document.getElementById('actName').value = '';
+            clearImage('act');
+            
+            const title = document.getElementById('actTitle');
+            const sub = document.getElementById('actSub');
+            const grp = document.getElementById('borrowerGroup');
+            const nameInp = document.getElementById('actName');
 
-            // Reset Form & Image
-            document.getElementById('borrowerName').value = '';
-            clearBorrowImage();
+            sub.innerText = `${item.id} - ${item.name}`;
 
-            const title = document.getElementById('borrowModalTitle');
-            const sub = document.getElementById('borrowModalSub');
-            const field = document.getElementById('borrowerField');
-            const nameInput = document.getElementById('borrowerName');
-            
-            sub.innerHTML = `<span class="font-bold">${item.id}</span> - ${item.name}`;
-            
-            if (item.status === 'available') {
-                title.innerText = 'ขอยืมอุปกรณ์';
-                field.classList.remove('hidden');
-                nameInput.required = true;
-            } else {
-                title.innerText = 'แจ้งคืนอุปกรณ์';
-                field.classList.add('hidden');
-                nameInput.required = false;
-            }
-            openModal('borrowModal');
-        }
+            if (item.status === 'available') {
+                title.innerText = 'เบิกอุปกรณ์';
+                grp.classList.remove('hidden');
+                nameInp.required = true;
+            } else {
+                title.innerText = 'คืนอุปกรณ์';
+                grp.classList.add('hidden');
+                nameInp.required = false;
+            }
 
-        async function submitBorrow() {
-            if (!selectedItem) return;
-            closeModal('borrowModal');
+            openModal('actionModal');
+        }
 
-            // Handle Image
-            const fileInput = document.getElementById('borrowFile');
-            let imageData = null, imageName = null;
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                imageName = file.name;
-                imageData = await toBase64(file);
-            }
+        async function submitAction() {
+            closeModal('actionModal');
+            const type = selectedItem.status === 'available' ? 'borrow' : 'return';
+            const imgData = await getBase64('actFile');
 
-            const payload = {
-                action: selectedItem.status === 'available' ? 'borrow' : 'return',
-                id: selectedItem.id,
-                borrower: document.getElementById('borrowerName').value,
-                imageName: imageName,
-                imageData: imageData
-            };
+            await postData({
+                action: type,
+                id: selectedItem.id,
+                borrower: document.getElementById('actName').value,
+                imageData: imgData?.data,
+                imageName: imgData?.name
+            });
+        }
 
-            await sendRequest(payload);
-        }
+        // --- Admin Functions ---
+        function toggleAdmin() {
+            if (isAdmin) {
+                isAdmin = false;
+                document.getElementById('addBtn').classList.add('hidden');
+                document.getElementById('adminPanel').classList.add('hidden');
+                document.getElementById('adminIcon').innerText = 'admin_panel_settings';
+                render();
+            } else {
+                openModal('loginModal');
+            }
+        }
 
-        // --- Admin Actions ---
+        function doLogin() {
+            const pass = document.getElementById('loginPass').value;
+            if (pass === ADMIN_CODE) {
+                isAdmin = true;
+                closeModal('loginModal');
+                document.getElementById('addBtn').classList.remove('hidden');
+                document.getElementById('adminIcon').innerText = 'logout';
+                document.getElementById('loginPass').value = '';
+                render();
+            } else {
+                alert('รหัสผ่านไม่ถูกต้อง');
+            }
+        }
 
-        function openUpsertModal(editId = null) {
-            // Clear Form & Image
-            document.getElementById('upsertName').value = '';
-            clearUpsertImage();
-            
-            const title = document.getElementById('upsertTitle');
-            const modeInput = document.getElementById('upsertMode');
-            const idInput = document.getElementById('upsertId');
+        function openUpsert() {
+            // Add Mode
+            document.getElementById('upTitle').innerText = 'เพิ่มอุปกรณ์ใหม่';
+            document.getElementById('upMode').value = 'add';
+            document.getElementById('upName').value = '';
+            clearImage('up');
+            
+            // Auto ID
+            const maxId = items.reduce((max, x) => {
+                const num = parseInt(x.id.replace('TFS-', '')) || 0;
+                return Math.max(max, num);
+            }, 0);
+            document.getElementById('upId').value = `TFS-${String(maxId + 1).padStart(3, '0')}`;
+            
+            openModal('upsertModal');
+        }
 
-            if (editId) {
-                const item = equipmentData.find(i => i.id === editId);
-                title.innerText = 'แก้ไขอุปกรณ์';
-                modeInput.value = 'edit';
-                idInput.value = item.id;
-                document.getElementById('upsertName').value = item.name;
-                document.getElementById('upsertType').value = item.type;
-                // Note: ไม่แสดงรูปเก่าใน Preview เพราะเราจะแสดงเฉพาะรูปใหม่ที่จะอัพโหลด
-            } else {
-                title.innerText = 'เพิ่มอุปกรณ์ใหม่';
-                modeInput.value = 'add';
-                const nextId = equipmentData.length > 0 ? 
-                    Math.max(...equipmentData.map(d => parseInt(d.id.split('-')[1] || 0))) + 1 : 1;
-                idInput.value = `TFS-${String(nextId).padStart(3, '0')}`;
-            }
-            openModal('upsertModal');
-        }
+        function editItem(id) {
+            const item = items.find(x => x.id === id);
+            document.getElementById('upTitle').innerText = 'แก้ไขข้อมูล';
+            document.getElementById('upMode').value = 'edit';
+            document.getElementById('upId').value = item.id;
+            document.getElementById('upName').value = item.name;
+            document.getElementById('upType').value = item.type;
+            clearImage('up'); // Reset image input (user upload new only if change)
+            openModal('upsertModal');
+        }
 
-        async function submitUpsert() {
-            closeModal('upsertModal');
-            
-            const fileInput = document.getElementById('upsertFile');
-            let imageData = null, imageName = null;
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                imageName = file.name;
-                imageData = await toBase64(file);
-            }
+        async function submitUpsert() {
+            closeModal('upsertModal');
+            const imgData = await getBase64('upFile');
+            
+            await postData({
+                action: document.getElementById('upMode').value,
+                id: document.getElementById('upId').value,
+                name: document.getElementById('upName').value,
+                type: document.getElementById('upType').value,
+                imageData: imgData?.data,
+                imageName: imgData?.name
+            });
+        }
 
-            const payload = {
-                action: document.getElementById('upsertMode').value,
-                id: document.getElementById('upsertId').value,
-                name: document.getElementById('upsertName').value,
-                type: document.getElementById('upsertType').value,
-                imageName: imageName,
-                imageData: imageData
-            };
+        async function deleteItem(id) {
+            if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
+                await postData({ action: 'delete', id: id });
+            }
+        }
 
-            await sendRequest(payload);
-        }
+        async function approve(id, type) {
+            await postData({ action: 'approve', id: id, reqType: type });
+        }
 
-        async function deleteItem(id) {
-            if(!confirm('ยืนยันลบ?')) return;
-            await sendRequest({ action: 'delete', id: id });
-        }
+        async function reject(id, type) {
+            if (confirm('ยืนยันปฏิเสธคำขอนี้?')) {
+                await postData({ action: 'reject', id: id, reqType: type });
+            }
+        }
 
-        async function approve(id, type, decision) {
-            await sendRequest({ action: decision, id: id, type: type });
-        }
+        // --- Utilities ---
+        function filter(type) {
+            filterType = type;
+            ['btnAll', 'btnAvail', 'btnBorrow'].forEach(id => {
+                const btn = document.getElementById(id);
+                btn.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 transition';
+            });
+            const active = type === 'all' ? 'btnAll' : (type === 'available' ? 'btnAvail' : 'btnBorrow');
+            document.getElementById(active).className = 'flex-1 py-1.5 rounded-lg text-xs font-bold bg-gray-800 text-white transition shadow';
+            render();
+        }
 
-        // --- Helpers ---
+        function handleImage(input, imgId, boxId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById(imgId).src = e.target.result;
+                    document.getElementById(boxId).classList.remove('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
 
-        function toBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
-        }
+        function clearImage(prefix) {
+            document.getElementById(prefix + 'File').value = '';
+            document.getElementById(prefix + 'PreviewBox').classList.add('hidden');
+            document.getElementById(prefix + 'Preview').src = '';
+        }
 
-        function renderGrid() {
-            const grid = document.getElementById('equipmentGrid');
-            grid.innerHTML = '';
-            
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = equipmentData.filter(item => {
-                const matchSearch = item.name.toLowerCase().includes(term) || item.id.toLowerCase().includes(term);
-                let matchFilter = true;
-                if (currentFilter === 'available') matchFilter = item.status === 'available';
-                if (currentFilter === 'borrowed') matchFilter = item.status !== 'available';
-                return matchSearch && matchFilter;
-            });
+        function getBase64(inputId) {
+            const input = document.getElementById(inputId);
+            if (!input.files || !input.files[0]) return Promise.resolve(null);
+            
+            return new Promise((resolve) => {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = () => resolve({ name: file.name, data: reader.result });
+                reader.readAsDataURL(file);
+            });
+        }
 
-            if (filtered.length === 0) {
-                grid.innerHTML = `<div class="text-center text-gray-400 py-10">ไม่พบข้อมูล</div>`;
-                return;
-            }
+        function togglePass() {
+            const inp = document.getElementById('loginPass');
+            const icon = document.getElementById('eyeIcon');
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                icon.innerText = 'visibility_off';
+            } else {
+                inp.type = 'password';
+                icon.innerText = 'visibility';
+            }
+        }
 
-            filtered.forEach(item => {
-                const isAvail = item.status === 'available';
-                const statusInfo = isAvail ? {l:'ว่าง', c:'bg-green-100 text-green-700'} : 
-                                   item.status.includes('pending') ? {l:'รออนุมัติ', c:'bg-blue-100 text-blue-700'} : 
-                                   {l:'ถูกยืม', c:'bg-yellow-100 text-yellow-700'};
-                
-                let adminBtns = '';
-                if(isAdmin) {
-                    adminBtns = `
-                    <div class="absolute top-2 left-2 flex gap-2 z-10">
-                        <button onclick="event.stopPropagation(); openUpsertModal('${item.id}')" class="p-2 bg-white/90 rounded-full text-blue-600 shadow"><span class="material-icons text-sm">edit</span></button>
-                        <button onclick="event.stopPropagation(); deleteItem('${item.id}')" class="p-2 bg-white/90 rounded-full text-red-600 shadow"><span class="material-icons text-sm">delete</span></button>
-                    </div>`;
-                }
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function openHelp() { openModal('helpModal'); }
 
-                grid.innerHTML += `
-                    <div class="sch-card flex relative overflow-hidden h-32" onclick="openBorrowModal('${item.id}')">
-                        ${adminBtns}
-                        <div class="w-1/3 bg-gray-200">
-                            ${item.photoUrl ? `<img src="${item.photoUrl}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center"><span class="material-icons text-gray-400">image</span></div>'}
-                        </div>
-                        <div class="w-2/3 p-3 flex flex-col justify-between">
-                            <div>
-                                <div class="flex justify-between items-start">
-                                    <span class="text-xs text-gray-400 font-mono">${item.id}</span>
-                                    <span class="text-[10px] px-2 py-0.5 rounded-full ${statusInfo.c}">${statusInfo.l}</span>
-                                </div>
-                                <h4 class="font-bold text-gray-800 line-clamp-2 leading-tight mt-1">${item.name}</h4>
-                            </div>
-                            ${!isAvail ? `<div class="text-xs text-gray-500 flex items-center gap-1"><span class="material-icons text-xs">person</span> ${item.borrower}</div>` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function updateStats() {
-            document.getElementById('totalCount').innerText = equipmentData.length;
-            document.getElementById('availableCount').innerText = equipmentData.filter(i => i.status === 'available').length;
-            document.getElementById('borrowedCount').innerText = equipmentData.filter(i => i.status !== 'available').length;
-            document.getElementById('pendingCount').innerText = equipmentData.filter(i => i.status.includes('pending')).length;
-        }
-
-        function toggleAdminLogin() {
-            if (isAdmin) {
-                isAdmin = false;
-                document.getElementById('addBtn').classList.add('hidden');
-                document.getElementById('adminDashboard').classList.add('hidden');
-                renderGrid();
-                showAlert('Logout', 'ออกจากระบบแล้ว', 'success');
-            } else {
-                openModal('loginModal');
-            }
-        }
-
-        function submitLogin() {
-            if (document.getElementById('adminPass').value === ADMIN_PASSWORD) {
-                isAdmin = true;
-                closeModal('loginModal');
-                document.getElementById('addBtn').classList.remove('hidden');
-                document.getElementById('adminDashboard').classList.remove('hidden');
-                renderAdminDashboard();
-                renderGrid();
-                showAlert('Success', 'เข้าสู่ระบบสำเร็จ', 'success');
-            } else {
-                showAlert('Error', 'รหัสผ่านผิด', 'error');
-            }
-        }
-
-        function renderAdminDashboard() {
-            const list = document.getElementById('adminRequestList');
-            const noMsg = document.getElementById('noPendingMsg');
-            list.innerHTML = '';
-            
-            const pending = equipmentData.filter(i => i.status.includes('pending'));
-            if(pending.length === 0) { noMsg.classList.remove('hidden'); return; }
-            noMsg.classList.add('hidden');
-
-            pending.forEach(item => {
-                const type = item.status === 'pending_borrow' ? 'borrow' : 'return';
-                list.innerHTML += `
-                    <div class="p-3 bg-gray-50 mb-1">
-                        <div class="flex justify-between text-xs font-bold mb-1">
-                            <span class="${type==='borrow'?'text-blue-600':'text-yellow-600'} uppercase">${type}</span>
-                            <span>${item.id}</span>
-                        </div>
-                        <div class="font-bold text-sm">${item.name}</div>
-                        <div class="text-xs text-gray-500 mb-2">โดย: ${item.borrower}</div>
-                        <div class="flex gap-2">
-                            <button onclick="approve('${item.id}', '${type}', 'approve')" class="flex-1 bg-green-600 text-white text-xs py-1 rounded">อนุมัติ</button>
-                            <button onclick="approve('${item.id}', '${type}', 'reject')" class="flex-1 bg-red-500 text-white text-xs py-1 rounded">ปฏิเสธ</button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function setFilter(f) {
-            currentFilter = f;
-            document.querySelectorAll('.filter-btn').forEach(b => {
-                b.classList.remove('bg-gray-800', 'text-white');
-                b.classList.add('bg-gray-100', 'text-gray-600');
-            });
-            event.target.classList.remove('bg-gray-100', 'text-gray-600');
-            event.target.classList.add('bg-gray-800', 'text-white');
-            renderGrid();
-        }
-
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function openHelpModal() { document.getElementById('helpModal').classList.remove('hidden'); }
-        function showAlert(t, m, type) {
-            document.getElementById('alertTitle').innerText = t;
-            document.getElementById('alertMessage').innerText = m;
-            document.getElementById('alertIcon').innerText = type === 'success' ? 'check_circle' : (type === 'error' ? 'error' : 'info');
-            document.getElementById('alertModal').classList.remove('hidden');
-        }
-
-    </script>
+    </script>
 </body>
 </html>
