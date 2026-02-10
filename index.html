@@ -29,20 +29,16 @@
     </script>
     <style>
         body { background-color: #F8F9FA; }
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #E2001A; border-radius: 2px; }
-        
-        /* Animations */
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Schindler Card Style */
         .sch-card {
             background: white;
             border: 1px solid #e5e7eb;
-            border-radius: 4px; /* More square for engineering look */
+            border-radius: 4px;
             transition: all 0.2s ease;
         }
         .sch-card:hover {
@@ -50,18 +46,6 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             transform: translateY(-2px);
         }
-        
-        /* Schindler Button */
-        .btn-primary {
-            background-color: #E2001A;
-            color: white;
-            border-radius: 4px;
-            font-weight: 500;
-            transition: background-color 0.2s;
-        }
-        .btn-primary:hover { background-color: #b50015; }
-        
-        .status-badge { clip-path: polygon(10% 0, 100% 0, 100% 100%, 0% 100%); }
     </style>
 </head>
 <body class="h-full flex flex-col text-gray-800">
@@ -77,8 +61,8 @@
             
             <div class="flex items-center gap-3">
                 <button onclick="toggleAdminLogin()" class="p-2 hover:bg-gray-800 rounded transition text-sm flex items-center gap-2">
-                    <span class="material-icons text-gray-400">admin_panel_settings</span>
-                    <span class="hidden md:inline">Admin</span>
+                    <span class="material-icons text-gray-400" id="adminIcon">admin_panel_settings</span>
+                    <span class="hidden md:inline" id="adminText">Admin</span>
                 </button>
             </div>
         </div>
@@ -106,22 +90,44 @@
                 </div>
             </div>
 
-            <div class="flex flex-col md:flex-row gap-4 mb-6 justify-between items-center bg-white p-4 rounded shadow-sm border border-gray-200">
-                <div class="relative w-full md:w-96">
-                    <span class="material-icons absolute left-3 top-2.5 text-gray-400">search</span>
-                    <input type="text" id="searchInput" placeholder="Search ID or Name..." 
-                           class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded focus:border-schindler-red focus:ring-1 focus:ring-schindler-red outline-none"
-                           oninput="filterEquipment()">
+            <div id="userView" class="fade-in">
+                <div class="flex flex-col md:flex-row gap-4 mb-6 justify-between items-center bg-white p-4 rounded shadow-sm border border-gray-200">
+                    <div class="relative w-full md:w-96">
+                        <span class="material-icons absolute left-3 top-2.5 text-gray-400">search</span>
+                        <input type="text" id="searchInput" placeholder="Search ID or Name..." 
+                               class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded focus:border-schindler-red focus:ring-1 focus:ring-schindler-red outline-none"
+                               oninput="filterEquipment()">
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="setFilter('all')" class="filter-btn active px-4 py-1.5 rounded text-sm font-medium bg-gray-800 text-white transition">All</button>
+                        <button onclick="setFilter('available')" class="filter-btn px-4 py-1.5 rounded text-sm font-medium bg-gray-200 text-gray-600 hover:bg-gray-300 transition">Available</button>
+                        <button onclick="setFilter('borrowed')" class="filter-btn px-4 py-1.5 rounded text-sm font-medium bg-gray-200 text-gray-600 hover:bg-gray-300 transition">Borrowed</button>
+                    </div>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="setFilter('all')" class="filter-btn active px-4 py-1.5 rounded text-sm font-medium bg-gray-800 text-white transition">All</button>
-                    <button onclick="setFilter('available')" class="filter-btn px-4 py-1.5 rounded text-sm font-medium bg-gray-200 text-gray-600 hover:bg-gray-300 transition">Available</button>
-                    <button onclick="setFilter('borrowed')" class="filter-btn px-4 py-1.5 rounded text-sm font-medium bg-gray-200 text-gray-600 hover:bg-gray-300 transition">Borrowed</button>
-                </div>
+
+                <div id="equipmentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    </div>
             </div>
 
-            <div id="equipmentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div id="adminView" class="hidden fade-in">
+                <div class="bg-red-50 border border-red-200 rounded p-4 mb-6 flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-schindler-red flex items-center gap-2">
+                        <span class="material-icons">gavel</span> Admin Dashboard
+                    </h2>
+                    <span class="text-sm text-red-600 font-medium">Manage Requests</span>
                 </div>
+
+                <div class="bg-white rounded shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="p-4 border-b border-gray-100 bg-gray-50">
+                        <h3 class="font-bold text-gray-700">Pending Requests</h3>
+                    </div>
+                    <div id="adminRequestList" class="divide-y divide-gray-100">
+                        </div>
+                    <div id="noPendingMsg" class="hidden p-8 text-center text-gray-400">
+                        No pending requests at the moment.
+                    </div>
+                </div>
+            </div>
             
             <div id="loadingOverlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
                 <div class="flex flex-col items-center">
@@ -135,28 +141,16 @@
 
     <div id="borrowModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-lg shadow-2xl p-6 border-t-8 border-schindler-red">
-            <h3 class="text-xl font-bold text-gray-900 mb-1" id="modalTitle">Borrow Request</h3>
-            <p class="text-gray-500 text-sm mb-6" id="modalSub">TFS-001 - Drill Bosch</p>
+            <h3 class="text-xl font-bold text-gray-900 mb-1" id="modalTitle">Request</h3>
+            <p class="text-gray-500 text-sm mb-6" id="modalSub">...</p>
             
             <form id="borrowForm" onsubmit="event.preventDefault(); submitBorrow();">
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2 uppercase">Technician Name</label>
-                    <input type="text" id="borrowerName" class="w-full p-2 border border-gray-300 rounded focus:border-schindler-red outline-none" required>
+                    <input type="text" id="borrowerName" class="w-full p-2 border border-gray-300 rounded focus:border-schindler-red outline-none">
                 </div>
                 
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2 uppercase">Proof Photo (Optional)</label>
-                    <div class="border-2 border-dashed border-gray-300 rounded p-4 text-center hover:border-schindler-red cursor-pointer transition" onclick="document.getElementById('photoInput').click()">
-                        <span class="material-icons text-gray-400 text-3xl">add_a_photo</span>
-                        <p class="text-xs text-gray-500 mt-1">Click to upload</p>
-                        <input type="file" id="photoInput" class="hidden" accept="image/*" capture="environment">
-                    </div>
-                    <div id="photoPreview" class="hidden mt-2">
-                        <img src="" class="h-20 w-auto rounded border border-gray-200 object-cover">
-                    </div>
-                </div>
-                
-                <div class="flex gap-2 justify-end">
+                <div class="flex gap-2 justify-end mt-6">
                     <button type="button" onclick="closeModal('borrowModal')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded font-medium text-sm">CANCEL</button>
                     <button type="submit" class="px-6 py-2 bg-schindler-red text-white rounded font-bold hover:bg-red-700 transition text-sm shadow-md">CONFIRM</button>
                 </div>
@@ -164,73 +158,75 @@
         </div>
     </div>
 
+    <div id="adminLoginModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-lg shadow-2xl p-6 border-t-8 border-gray-800">
+            <div class="text-center mb-6">
+                <span class="material-icons text-4xl text-gray-700">security</span>
+                <h3 class="text-xl font-bold text-gray-900 mt-2">Admin Access</h3>
+            </div>
+            
+            <form onsubmit="event.preventDefault(); submitAdminLogin();">
+                <div class="mb-6">
+                    <input type="password" id="adminPassword" placeholder="Enter Password" class="w-full p-3 border border-gray-300 rounded text-center focus:border-schindler-red outline-none transition" required>
+                </div>
+                <button type="submit" class="w-full py-3 bg-black text-white rounded font-bold hover:bg-gray-800 transition">LOGIN</button>
+                <button type="button" onclick="closeModal('adminLoginModal')" class="w-full mt-2 py-2 text-gray-500 text-sm hover:text-gray-800">Cancel</button>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // ----------------------------------------------------
-        // Configuration
-        // ----------------------------------------------------
-        // IMPORTANT: Replace this with YOUR Web App URL form Step 1
+        // CONFIGURATION
         const API_URL = 'https://script.google.com/macros/s/AKfycbxwl5PRzo5ctZc9JjIrSp5n2EZlFxxbqG9x9YiBkwCysQ0z2P_z4zTBZQ_TPzPM9WiS/exec'; 
-        
+        const ADMIN_PASS = 'jiraphong2227';
+
+        // STATE
         let equipmentData = [];
         let currentFilter = 'all';
+        let isAdmin = false;
+        let selectedItem = null;
 
-        // ----------------------------------------------------
-        // Initialization
-        // ----------------------------------------------------
+        // INITIALIZATION
         document.addEventListener('DOMContentLoaded', () => {
             fetchData();
         });
 
+        // DATA FETCHING
         async function fetchData() {
             document.getElementById('loadingOverlay').classList.remove('hidden');
-            
             try {
-                // Mock Data for Demo purposes (REMOVE THIS BLOCK WHEN USING REAL API)
-                if (API_URL === 'YOUR_WEB_APP_URL_HERE') {
-                    console.warn("Using mock data. Please replace API_URL.");
-                    equipmentData = [
-                        { id: 'TFS-001', name: 'Hammer Drill 18V', type: 'Power Tool', status: 'available', photoUrl: 'https://via.placeholder.com/150' },
-                        { id: 'TFS-002', name: 'Multimeter Fluke', type: 'Measurement', status: 'borrowed', borrower: 'Somchai', borrowDate: '2023-10-01' },
-                        { id: 'TFS-003', name: 'Safety Harness', type: 'Safety', status: 'pending_borrow', borrower: 'Wichai', borrowDate: '2023-10-02' },
-                        { id: 'TFS-004', name: 'Laptop Dell', type: 'IT', status: 'available' },
-                    ];
-                    renderGrid();
-                    updateStats();
-                    document.getElementById('loadingOverlay').classList.add('hidden');
-                    return;
-                }
-                
-                // Real Fetch
                 const response = await fetch(API_URL);
                 const data = await response.json();
-                equipmentData = data; // Assuming backend returns array of objects
-                renderGrid();
+                equipmentData = data;
+                
+                // Render based on current view
+                if (isAdmin) {
+                    renderAdminDashboard();
+                } else {
+                    renderGrid();
+                }
                 updateStats();
             } catch (error) {
                 console.error("Error fetching data:", error);
-                alert("Failed to load data. Please check connection.");
+                alert("Connection Error. Please try again.");
             } finally {
                 document.getElementById('loadingOverlay').classList.add('hidden');
             }
         }
 
-        // ----------------------------------------------------
-        // Rendering
-        // ----------------------------------------------------
+        // ------------------------------------------------------------------
+        // USER FUNCTIONS
+        // ------------------------------------------------------------------
         function renderGrid() {
             const grid = document.getElementById('equipmentGrid');
             grid.innerHTML = '';
             
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            
             const filtered = equipmentData.filter(item => {
-                const matchesSearch = item.name.toLowerCase().includes(searchTerm) || 
-                                      item.id.toLowerCase().includes(searchTerm);
-                
+                const matchesSearch = item.name.toLowerCase().includes(searchTerm) || item.id.toLowerCase().includes(searchTerm);
                 let matchesFilter = true;
                 if (currentFilter === 'available') matchesFilter = item.status === 'available';
-                if (currentFilter === 'borrowed') matchesFilter = item.status === 'borrowed' || item.status === 'pending_return';
-                
+                if (currentFilter === 'borrowed') matchesFilter = item.status === 'borrowed' || item.status.includes('pending');
                 return matchesSearch && matchesFilter;
             });
 
@@ -246,32 +242,210 @@
                 
                 const card = document.createElement('div');
                 card.className = `sch-card flex flex-col overflow-hidden relative group cursor-pointer`;
+                // Only allow clicking if not admin (Admin uses dashboard)
                 card.onclick = () => openActionModal(item);
                 
                 card.innerHTML = `
                     <div class="h-40 bg-gray-100 flex items-center justify-center relative overflow-hidden">
-                        ${item.photoUrl ? `<img src="${item.photoUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">` : `<span class="material-icons text-gray-300 text-5xl">inventory_2</span>`}
-                        <div class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-bold uppercase rounded ${statusColor} border border-white/20 shadow-sm">
+                        ${item.photoUrl ? `<img src="${item.photoUrl}" class="w-full h-full object-cover">` : `<span class="material-icons text-gray-300 text-5xl">inventory_2</span>`}
+                        <div class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-bold uppercase rounded ${statusColor} shadow-sm">
                             ${item.status.replace('_', ' ')}
                         </div>
                     </div>
                     <div class="p-4 flex-1 flex flex-col">
                         <div class="text-[10px] text-gray-400 font-mono mb-1 uppercase tracking-widest">${item.id}</div>
                         <h4 class="font-bold text-gray-800 mb-1 leading-tight group-hover:text-schindler-red transition-colors">${item.name}</h4>
-                        <div class="text-xs text-gray-500 mb-4">${item.type}</div>
-                        
-                        ${!isAvailable ? `
-                        <div class="mt-auto pt-3 border-t border-gray-100 text-xs">
-                            <div class="flex items-center text-gray-600 gap-1">
-                                <span class="material-icons text-[14px]">person</span> ${item.borrower || '-'}
-                            </div>
-                        </div>` : ''}
+                        <div class="text-xs text-gray-500 mb-2">${item.type}</div>
+                        ${!isAvailable ? `<div class="mt-auto pt-2 border-t border-gray-100 text-xs text-gray-600 flex items-center gap-1"><span class="material-icons text-[14px]">person</span> ${item.borrower || '-'}</div>` : ''}
                     </div>
                 `;
                 grid.appendChild(card);
             });
         }
 
+        function openActionModal(item) {
+            selectedItem = item;
+            if(item.status.includes('pending')) {
+                alert("This item is pending approval.");
+                return;
+            }
+
+            const modal = document.getElementById('borrowModal');
+            document.getElementById('modalTitle').innerText = item.status === 'available' ? 'Borrow Request' : 'Return Request';
+            document.getElementById('modalSub').innerText = `${item.id} - ${item.name}`;
+            
+            const nameInput = document.getElementById('borrowerName');
+            if (item.status === 'available') {
+                nameInput.parentElement.classList.remove('hidden');
+                nameInput.required = true;
+                nameInput.value = '';
+            } else {
+                nameInput.parentElement.classList.add('hidden');
+                nameInput.required = false;
+            }
+            modal.classList.remove('hidden');
+        }
+
+        async function submitBorrow() {
+            if (!selectedItem) return;
+            const name = document.getElementById('borrowerName').value;
+            const action = selectedItem.status === 'available' ? 'borrow' : 'return';
+            
+            closeModal('borrowModal');
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: action,
+                        id: selectedItem.id,
+                        borrower: name
+                    })
+                });
+                alert('Request submitted! Waiting for Admin approval.');
+                fetchData();
+            } catch (err) {
+                console.error(err);
+                alert('Error submitting request');
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // ADMIN FUNCTIONS
+        // ------------------------------------------------------------------
+        function toggleAdminLogin() {
+            if (isAdmin) {
+                // Logout Logic
+                isAdmin = false;
+                document.getElementById('adminText').innerText = 'Admin';
+                document.getElementById('adminIcon').innerText = 'admin_panel_settings';
+                document.getElementById('userView').classList.remove('hidden');
+                document.getElementById('adminView').classList.add('hidden');
+                renderGrid();
+                alert("Logged out successfully.");
+            } else {
+                // Show Login Modal
+                document.getElementById('adminLoginModal').classList.remove('hidden');
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('adminPassword').focus();
+            }
+        }
+
+        function submitAdminLogin() {
+            const pass = document.getElementById('adminPassword').value;
+            if (pass === ADMIN_PASS) {
+                isAdmin = true;
+                closeModal('adminLoginModal');
+                
+                // UI Switch
+                document.getElementById('adminText').innerText = 'Logout';
+                document.getElementById('adminIcon').innerText = 'logout';
+                document.getElementById('userView').classList.add('hidden');
+                document.getElementById('adminView').classList.remove('hidden');
+                
+                renderAdminDashboard();
+            } else {
+                alert("Incorrect Password!");
+                document.getElementById('adminPassword').value = '';
+            }
+        }
+
+        function renderAdminDashboard() {
+            const list = document.getElementById('adminRequestList');
+            const noMsg = document.getElementById('noPendingMsg');
+            list.innerHTML = '';
+
+            const pendingItems = equipmentData.filter(item => item.status.includes('pending'));
+
+            if (pendingItems.length === 0) {
+                noMsg.classList.remove('hidden');
+                return;
+            }
+            noMsg.classList.add('hidden');
+
+            pendingItems.forEach(item => {
+                const reqType = item.status === 'pending_borrow' ? 'Borrow' : 'Return';
+                const badgeColor = item.status === 'pending_borrow' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800';
+                
+                const row = document.createElement('div');
+                row.className = 'p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-gray-50';
+                row.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-xl font-bold text-gray-500">
+                            ${item.id.split('-')[1]}
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-xs font-bold px-2 py-0.5 rounded uppercase ${badgeColor}">${reqType} Request</span>
+                                <span class="text-xs text-gray-400">${item.id}</span>
+                            </div>
+                            <h4 class="font-bold text-gray-800">${item.name}</h4>
+                            <p class="text-sm text-gray-600">By: <span class="font-semibold">${item.borrower}</span></p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <button onclick="handleAdminAction('${item.id}', 'approve', '${reqType.toLowerCase()}')" class="flex-1 md:flex-none px-4 py-2 bg-green-600 text-white rounded font-medium hover:bg-green-700 shadow-sm transition">
+                            Approve
+                        </button>
+                        <button onclick="handleAdminAction('${item.id}', 'reject', '${reqType.toLowerCase()}')" class="flex-1 md:flex-none px-4 py-2 bg-red-600 text-white rounded font-medium hover:bg-red-700 shadow-sm transition">
+                            Reject
+                        </button>
+                    </div>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        async function handleAdminAction(id, decision, type) {
+            // decision: 'approve' | 'reject'
+            // type: 'borrow' | 'return' (to help backend know what to do)
+            
+            if(!confirm(`Are you sure you want to ${decision} this request?`)) return;
+
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+
+            try {
+                // If reject, we just revert status to previous state. 
+                // But for simplicity with this backend, we might handle it same way or different.
+                // Here we send specific action to backend.
+                
+                let payload = {
+                    action: decision, // 'approve' or 'reject' (Make sure your GAS handles 'reject' or treat logic)
+                    id: id,
+                    type: type 
+                };
+                
+                // NOTE: If you haven't updated GAS to handle 'reject', 
+                // 'approve' logic in GAS usually sets status to 'borrowed' or 'available'.
+                
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                alert(`Request processed successfully.`);
+                fetchData(); // Reload to update list
+
+            } catch (err) {
+                console.error(err);
+                alert('Error processing request.');
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // UTILS
+        // ------------------------------------------------------------------
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+        
         function updateStats() {
             document.getElementById('totalCount').innerText = equipmentData.length;
             document.getElementById('availableCount').innerText = equipmentData.filter(i => i.status === 'available').length;
@@ -279,11 +453,8 @@
             document.getElementById('pendingCount').innerText = equipmentData.filter(i => i.status.includes('pending')).length;
         }
 
-        function filterEquipment() { renderGrid(); }
-        
         function setFilter(type) {
             currentFilter = type;
-            // Update UI buttons
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('bg-gray-800', 'text-white');
                 btn.classList.add('bg-gray-200', 'text-gray-600');
@@ -295,91 +466,10 @@
             }
             renderGrid();
         }
-
-        // ----------------------------------------------------
-        // Actions
-        // ----------------------------------------------------
-        let selectedItem = null;
-
-        function openActionModal(item) {
-            selectedItem = item;
-            const modal = document.getElementById('borrowModal');
-            document.getElementById('modalTitle').innerText = item.status === 'available' ? 'Borrow Equipment' : 'Return Equipment';
-            document.getElementById('modalSub').innerText = `${item.id} - ${item.name}`;
-            
-            // Toggle form fields based on status
-            const borrowerField = document.getElementById('borrowerName').parentElement;
-            if (item.status === 'available') {
-                borrowerField.classList.remove('hidden');
-                document.getElementById('borrowerName').required = true;
-            } else {
-                borrowerField.classList.add('hidden'); // Returning doesn't need name input usually
-                document.getElementById('borrowerName').required = false;
-            }
-
-            modal.classList.remove('hidden');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-            selectedItem = null;
-        }
-
-        async function submitBorrow() {
-            if (!selectedItem) return;
-
-            const name = document.getElementById('borrowerName').value;
-            const action = selectedItem.status === 'available' ? 'borrow' : 'return';
-            
-            // Show loading
-            document.querySelector('#borrowModal button[type="submit"]').innerHTML = 'PROCESSING...';
-            document.querySelector('#borrowModal button[type="submit"]').disabled = true;
-
-            const payload = {
-                action: action,
-                id: selectedItem.id,
-                borrower: name,
-                // Add photo handling logic here (converting file to base64)
-            };
-
-            try {
-                if (API_URL !== 'YOUR_WEB_APP_URL_HERE') {
-                    await fetch(API_URL, {
-                        method: 'POST',
-                        mode: 'no-cors', // Important for Google Apps Script Web App
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                }
-                
-                alert('Request submitted successfully!');
-                closeModal('borrowModal');
-                fetchData(); // Refresh
-
-            } catch (err) {
-                console.error(err);
-                alert('Error submitting request');
-            } finally {
-                // Reset Button
-                const btn = document.querySelector('#borrowModal button[type="submit"]');
-                btn.innerHTML = 'CONFIRM';
-                btn.disabled = false;
-            }
-        }
         
-        // Photo Preview
-        document.getElementById('photoInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = document.querySelector('#photoPreview img');
-                    img.src = e.target.result;
-                    document.getElementById('photoPreview').classList.remove('hidden');
-                }
-                reader.readAsDataURL(file);
-            }
-        });
+        function filterEquipment() {
+            renderGrid();
+        }
 
     </script>
 </body>
