@@ -14,15 +14,12 @@
                 extend: {
                     colors: {
                         schindler: {
-                            red: '#E2001A',      // Schindler Red
-                            dark: '#000000',     // Corporate Black
-                            gray: '#F2F2F2',     // Light Gray
-                            text: '#333333'      // Text Gray
+                            red: '#E2001A',
+                            dark: '#000000',
+                            gray: '#F2F2F2',
                         }
                     },
-                    fontFamily: {
-                        sans: ['Kanit', 'sans-serif'],
-                    }
+                    fontFamily: { sans: ['Kanit', 'sans-serif'] }
                 }
             }
         }
@@ -30,204 +27,199 @@
     <style>
         body { background-color: #F8F9FA; }
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #E2001A; border-radius: 2px; }
-        .fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .sch-card {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-        }
-        .sch-card:hover {
-            border-color: #E2001A;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
-        }
+        ::-webkit-scrollbar-thumb { background: #E2001A; border-radius: 3px; }
+        .sch-card { background: white; border: 1px solid #e5e7eb; border-radius: 4px; transition: all 0.2s ease; }
+        .sch-card:hover { border-color: #E2001A; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .btn-float { position: fixed; bottom: 2rem; right: 2rem; z-index: 40; }
     </style>
 </head>
 <body class="h-full flex flex-col text-gray-800">
 
     <header class="bg-black text-white shadow-md sticky top-0 z-50 border-b-4 border-schindler-red">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <div class="flex flex-col leading-none">
-                    <span class="text-2xl font-bold tracking-wider">Schindler</span>
-                    <span class="text-[10px] text-gray-400 uppercase tracking-[0.2em]">TFS Equipment System</span>
-                </div>
+            <div class="flex flex-col leading-none">
+                <span class="text-2xl font-bold tracking-wider">Schindler</span>
+                <span class="text-[10px] text-gray-400 uppercase tracking-[0.2em]">TFS Equipment System</span>
             </div>
-            
-            <div class="flex items-center gap-3">
-                <button onclick="toggleAdminLogin()" class="p-2 hover:bg-gray-800 rounded transition text-sm flex items-center gap-2">
-                    <span class="material-icons text-gray-400" id="adminIcon">admin_panel_settings</span>
-                    <span class="hidden md:inline" id="adminText">Admin</span>
-                </button>
-            </div>
+            <button onclick="toggleAdminLogin()" class="p-2 hover:bg-gray-800 rounded flex items-center gap-2 transition">
+                <span class="material-icons text-gray-400" id="adminIcon">admin_panel_settings</span>
+                <span class="hidden md:inline text-sm" id="adminText">Admin Login</span>
+            </button>
         </div>
     </header>
 
     <main class="flex-1 overflow-auto p-4 md:p-6">
         <div class="max-w-7xl mx-auto">
             
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div class="bg-white p-4 rounded border-l-4 border-gray-800 shadow-sm">
-                    <div class="text-gray-500 text-xs uppercase font-bold">Total Items</div>
-                    <div class="text-3xl font-bold text-gray-800" id="totalCount">0</div>
+                    <div class="text-xs text-gray-500 font-bold uppercase">Total Items</div>
+                    <div class="text-2xl font-bold" id="totalCount">0</div>
                 </div>
                 <div class="bg-white p-4 rounded border-l-4 border-green-500 shadow-sm">
-                    <div class="text-gray-500 text-xs uppercase font-bold">Available</div>
-                    <div class="text-3xl font-bold text-green-600" id="availableCount">0</div>
+                    <div class="text-xs text-gray-500 font-bold uppercase">Available</div>
+                    <div class="text-2xl font-bold text-green-600" id="availableCount">0</div>
                 </div>
                 <div class="bg-white p-4 rounded border-l-4 border-yellow-500 shadow-sm">
-                    <div class="text-gray-500 text-xs uppercase font-bold">Borrowed</div>
-                    <div class="text-3xl font-bold text-yellow-600" id="borrowedCount">0</div>
+                    <div class="text-xs text-gray-500 font-bold uppercase">Borrowed</div>
+                    <div class="text-2xl font-bold text-yellow-600" id="borrowedCount">0</div>
                 </div>
                 <div class="bg-white p-4 rounded border-l-4 border-blue-500 shadow-sm">
-                    <div class="text-gray-500 text-xs uppercase font-bold">Pending</div>
-                    <div class="text-3xl font-bold text-blue-600" id="pendingCount">0</div>
+                    <div class="text-xs text-gray-500 font-bold uppercase">Pending</div>
+                    <div class="text-2xl font-bold text-blue-600" id="pendingCount">0</div>
                 </div>
             </div>
 
-            <div id="userView" class="fade-in">
-                <div class="flex flex-col md:flex-row gap-4 mb-6 justify-between items-center bg-white p-4 rounded shadow-sm border border-gray-200">
-                    <div class="relative w-full md:w-96">
-                        <span class="material-icons absolute left-3 top-2.5 text-gray-400">search</span>
-                        <input type="text" id="searchInput" placeholder="Search ID or Name..." 
-                               class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded focus:border-schindler-red focus:ring-1 focus:ring-schindler-red outline-none"
-                               oninput="filterEquipment()">
+            <div id="adminDashboard" class="hidden mb-8 fade-in">
+                <div class="bg-white rounded shadow border border-gray-200 overflow-hidden">
+                    <div class="p-4 bg-red-50 border-b border-red-100 flex justify-between items-center">
+                        <h3 class="font-bold text-schindler-red flex items-center gap-2">
+                            <span class="material-icons">notifications_active</span> Pending Requests
+                        </h3>
                     </div>
-                    <div class="flex gap-2">
-                        <button onclick="setFilter('all')" class="filter-btn active px-4 py-1.5 rounded text-sm font-medium bg-gray-800 text-white transition">All</button>
-                        <button onclick="setFilter('available')" class="filter-btn px-4 py-1.5 rounded text-sm font-medium bg-gray-200 text-gray-600 hover:bg-gray-300 transition">Available</button>
-                        <button onclick="setFilter('borrowed')" class="filter-btn px-4 py-1.5 rounded text-sm font-medium bg-gray-200 text-gray-600 hover:bg-gray-300 transition">Borrowed</button>
-                    </div>
-                </div>
-
-                <div id="equipmentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    </div>
-            </div>
-
-            <div id="adminView" class="hidden fade-in">
-                <div class="bg-red-50 border border-red-200 rounded p-4 mb-6 flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-schindler-red flex items-center gap-2">
-                        <span class="material-icons">gavel</span> Admin Dashboard
-                    </h2>
-                    <span class="text-sm text-red-600 font-medium">Manage Requests</span>
-                </div>
-
-                <div class="bg-white rounded shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="p-4 border-b border-gray-100 bg-gray-50">
-                        <h3 class="font-bold text-gray-700">Pending Requests</h3>
-                    </div>
-                    <div id="adminRequestList" class="divide-y divide-gray-100">
-                        </div>
-                    <div id="noPendingMsg" class="hidden p-8 text-center text-gray-400">
-                        No pending requests at the moment.
-                    </div>
+                    <div id="adminRequestList" class="divide-y divide-gray-100"></div>
+                    <div id="noPendingMsg" class="hidden p-6 text-center text-gray-400 text-sm">No pending requests.</div>
                 </div>
             </div>
-            
-            <div id="loadingOverlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-                <div class="flex flex-col items-center">
-                    <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-schindler-red"></div>
-                    <div class="mt-4 text-gray-500 font-semibold text-sm">LOADING DATA...</div>
+
+            <div class="flex flex-col md:flex-row gap-4 mb-6 justify-between items-center bg-white p-4 rounded shadow-sm border border-gray-200">
+                <div class="relative w-full md:w-96">
+                    <span class="material-icons absolute left-3 top-2.5 text-gray-400">search</span>
+                    <input type="text" id="searchInput" placeholder="Search ID or Name..." 
+                           class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded focus:border-schindler-red outline-none"
+                           oninput="renderGrid()">
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="setFilter('all')" class="filter-btn active px-3 py-1.5 rounded text-sm font-medium bg-gray-800 text-white">All</button>
+                    <button onclick="setFilter('available')" class="filter-btn px-3 py-1.5 rounded text-sm font-medium bg-gray-200 text-gray-600">Available</button>
+                    <button onclick="setFilter('borrowed')" class="filter-btn px-3 py-1.5 rounded text-sm font-medium bg-gray-200 text-gray-600">Borrowed</button>
                 </div>
             </div>
+
+            <div id="equipmentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-20"></div>
 
         </div>
     </main>
 
+    <button id="addBtn" onclick="openUpsertModal()" class="hidden btn-float bg-schindler-red text-white p-4 rounded-full shadow-lg hover:bg-red-700 transition transform hover:scale-105">
+        <span class="material-icons text-2xl">add</span>
+    </button>
+
+    <div id="loadingOverlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="flex flex-col items-center">
+            <div class="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-schindler-red"></div>
+            <div class="mt-4 text-gray-500 font-bold text-sm tracking-widest">PROCESSING...</div>
+        </div>
+    </div>
+
     <div id="borrowModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-lg shadow-2xl p-6 border-t-8 border-schindler-red">
-            <h3 class="text-xl font-bold text-gray-900 mb-1" id="modalTitle">Request</h3>
-            <p class="text-gray-500 text-sm mb-6" id="modalSub">...</p>
-            
-            <form id="borrowForm" onsubmit="event.preventDefault(); submitBorrow();">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2 uppercase">Technician Name</label>
+        <div class="bg-white w-full max-w-md rounded shadow-2xl p-6 border-t-4 border-schindler-red">
+            <h3 class="text-xl font-bold mb-1" id="borrowModalTitle">Request</h3>
+            <p class="text-gray-500 text-sm mb-6" id="borrowModalSub">...</p>
+            <form onsubmit="event.preventDefault(); submitBorrow();">
+                <div id="borrowerField" class="mb-4">
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Technician Name</label>
                     <input type="text" id="borrowerName" class="w-full p-2 border border-gray-300 rounded focus:border-schindler-red outline-none">
                 </div>
-                
-                <div class="flex gap-2 justify-end mt-6">
-                    <button type="button" onclick="closeModal('borrowModal')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded font-medium text-sm">CANCEL</button>
-                    <button type="submit" class="px-6 py-2 bg-schindler-red text-white rounded font-bold hover:bg-red-700 transition text-sm shadow-md">CONFIRM</button>
+                <div class="flex gap-2 justify-end">
+                    <button type="button" onclick="closeModal('borrowModal')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded text-sm font-medium">Cancel</button>
+                    <button type="submit" class="px-6 py-2 bg-schindler-red text-white rounded text-sm font-bold hover:bg-red-700">CONFIRM</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="adminLoginModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-lg shadow-2xl p-6 border-t-8 border-gray-800">
-            <div class="text-center mb-6">
-                <span class="material-icons text-4xl text-gray-700">security</span>
-                <h3 class="text-xl font-bold text-gray-900 mt-2">Admin Access</h3>
-            </div>
-            
-            <form onsubmit="event.preventDefault(); submitAdminLogin();">
-                <div class="mb-6">
-                    <input type="password" id="adminPassword" placeholder="Enter Password" class="w-full p-3 border border-gray-300 rounded text-center focus:border-schindler-red outline-none transition" required>
+    <div id="loginModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded shadow-2xl p-6">
+            <h3 class="text-xl font-bold text-center mb-6">Admin Access</h3>
+            <form onsubmit="event.preventDefault(); submitLogin();">
+                <input type="password" id="adminPass" placeholder="Password" class="w-full p-3 border border-gray-300 rounded text-center mb-4 focus:border-schindler-red outline-none">
+                <button type="submit" class="w-full py-3 bg-black text-white rounded font-bold hover:bg-gray-800">LOGIN</button>
+                <button type="button" onclick="closeModal('loginModal')" class="w-full mt-2 py-2 text-gray-400 text-sm">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="upsertModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded shadow-2xl p-6 border-t-4 border-schindler-red max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-bold mb-6" id="upsertTitle">Add Equipment</h3>
+            <form onsubmit="event.preventDefault(); submitUpsert();">
+                <input type="hidden" id="upsertMode" value="add">
+                
+                <div class="mb-3">
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Equipment ID</label>
+                    <input type="text" id="upsertId" class="w-full p-2 border border-gray-300 rounded focus:border-schindler-red outline-none bg-gray-50" required>
                 </div>
-                <button type="submit" class="w-full py-3 bg-black text-white rounded font-bold hover:bg-gray-800 transition">LOGIN</button>
-                <button type="button" onclick="closeModal('adminLoginModal')" class="w-full mt-2 py-2 text-gray-500 text-sm hover:text-gray-800">Cancel</button>
+                <div class="mb-3">
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Name</label>
+                    <input type="text" id="upsertName" class="w-full p-2 border border-gray-300 rounded focus:border-schindler-red outline-none" required>
+                </div>
+                <div class="mb-3">
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Type/Category</label>
+                    <select id="upsertType" class="w-full p-2 border border-gray-300 rounded focus:border-schindler-red outline-none">
+                        <option value="Power Tool">Power Tool</option>
+                        <option value="Measurement">Measurement</option>
+                        <option value="Safety">Safety</option>
+                        <option value="IT">IT</option>
+                        <option value="General">General</option>
+                    </select>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Photo</label>
+                    <input type="file" id="upsertFile" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                    <p class="text-xs text-red-500 mt-1">* Leave blank to keep existing photo (Edit mode)</p>
+                </div>
+
+                <div class="flex gap-2 justify-end">
+                    <button type="button" onclick="closeModal('upsertModal')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded text-sm font-medium">Cancel</button>
+                    <button type="submit" class="px-6 py-2 bg-schindler-red text-white rounded text-sm font-bold hover:bg-red-700">SAVE ITEM</button>
+                </div>
             </form>
         </div>
     </div>
 
     <script>
-        // CONFIGURATION
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxwl5PRzo5ctZc9JjIrSp5n2EZlFxxbqG9x9YiBkwCysQ0z2P_z4zTBZQ_TPzPM9WiS/exec'; 
-        const ADMIN_PASS = 'jiraphong2227';
+        // --- CONFIGURATION ---
+        const API_URL = 'https://script.google.com/macros/s/AKfycbz_RZDCgQ5uDiREyiaRKD8JKIl5cfhHSQnRU4yaAhMQEv84dcbNJh_lYMMRmRnaWdrC/exec'; // ใส่ URL ของคุณที่นี่
+        const ADMIN_PASSWORD = 'jiraphong2227';
 
-        // STATE
+        // --- STATE ---
         let equipmentData = [];
         let currentFilter = 'all';
         let isAdmin = false;
         let selectedItem = null;
 
-        // INITIALIZATION
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchData();
-        });
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', fetchData);
 
-        // DATA FETCHING
         async function fetchData() {
             document.getElementById('loadingOverlay').classList.remove('hidden');
             try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                equipmentData = data;
-                
-                // Render based on current view
-                if (isAdmin) {
-                    renderAdminDashboard();
-                } else {
-                    renderGrid();
-                }
+                const res = await fetch(API_URL);
+                equipmentData = await res.json();
+                renderGrid();
                 updateStats();
-            } catch (error) {
-                console.error("Error fetching data:", error);
-                alert("Connection Error. Please try again.");
+                if(isAdmin) renderAdminDashboard();
+            } catch (e) {
+                console.error(e);
+                alert('Connection Failed');
             } finally {
                 document.getElementById('loadingOverlay').classList.add('hidden');
             }
         }
 
-        // ------------------------------------------------------------------
-        // USER FUNCTIONS
-        // ------------------------------------------------------------------
+        // --- RENDER ---
         function renderGrid() {
             const grid = document.getElementById('equipmentGrid');
             grid.innerHTML = '';
             
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const term = document.getElementById('searchInput').value.toLowerCase();
             const filtered = equipmentData.filter(item => {
-                const matchesSearch = item.name.toLowerCase().includes(searchTerm) || item.id.toLowerCase().includes(searchTerm);
-                let matchesFilter = true;
-                if (currentFilter === 'available') matchesFilter = item.status === 'available';
-                if (currentFilter === 'borrowed') matchesFilter = item.status === 'borrowed' || item.status.includes('pending');
-                return matchesSearch && matchesFilter;
+                const matchSearch = item.name.toLowerCase().includes(term) || item.id.toLowerCase().includes(term);
+                let matchFilter = true;
+                if (currentFilter === 'available') matchFilter = item.status === 'available';
+                if (currentFilter === 'borrowed') matchFilter = item.status !== 'available';
+                return matchSearch && matchFilter;
             });
 
             if (filtered.length === 0) {
@@ -236,121 +228,196 @@
             }
 
             filtered.forEach(item => {
-                const isAvailable = item.status === 'available';
-                const statusColor = isAvailable ? 'bg-green-100 text-green-800' : 
-                                    item.status.includes('pending') ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800';
+                const isAvail = item.status === 'available';
+                const statusColor = isAvail ? 'bg-green-100 text-green-800' : item.status.includes('pending') ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800';
                 
                 const card = document.createElement('div');
-                card.className = `sch-card flex flex-col overflow-hidden relative group cursor-pointer`;
-                // Only allow clicking if not admin (Admin uses dashboard)
-                card.onclick = () => openActionModal(item);
+                card.className = `sch-card flex flex-col overflow-hidden relative group`;
                 
+                // Admin Edit/Delete Controls
+                const adminControls = isAdmin ? `
+                    <div class="absolute top-2 left-2 z-10 flex gap-1">
+                        <button onclick="openUpsertModal('${item.id}')" class="bg-white p-1.5 rounded-full shadow hover:text-blue-600 text-gray-600">
+                            <span class="material-icons text-sm">edit</span>
+                        </button>
+                        <button onclick="deleteItem('${item.id}')" class="bg-white p-1.5 rounded-full shadow hover:text-red-600 text-gray-600">
+                            <span class="material-icons text-sm">delete</span>
+                        </button>
+                    </div>
+                ` : '';
+
                 card.innerHTML = `
-                    <div class="h-40 bg-gray-100 flex items-center justify-center relative overflow-hidden">
+                    ${adminControls}
+                    <div class="h-40 bg-gray-100 flex items-center justify-center relative overflow-hidden cursor-pointer" onclick="openBorrowModal('${item.id}')">
                         ${item.photoUrl ? `<img src="${item.photoUrl}" class="w-full h-full object-cover">` : `<span class="material-icons text-gray-300 text-5xl">inventory_2</span>`}
                         <div class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-bold uppercase rounded ${statusColor} shadow-sm">
                             ${item.status.replace('_', ' ')}
                         </div>
                     </div>
-                    <div class="p-4 flex-1 flex flex-col">
+                    <div class="p-4 flex-1 flex flex-col cursor-pointer" onclick="openBorrowModal('${item.id}')">
                         <div class="text-[10px] text-gray-400 font-mono mb-1 uppercase tracking-widest">${item.id}</div>
                         <h4 class="font-bold text-gray-800 mb-1 leading-tight group-hover:text-schindler-red transition-colors">${item.name}</h4>
                         <div class="text-xs text-gray-500 mb-2">${item.type}</div>
-                        ${!isAvailable ? `<div class="mt-auto pt-2 border-t border-gray-100 text-xs text-gray-600 flex items-center gap-1"><span class="material-icons text-[14px]">person</span> ${item.borrower || '-'}</div>` : ''}
+                        ${!isAvail ? `<div class="mt-auto pt-2 border-t border-gray-100 text-xs text-gray-600 flex items-center gap-1"><span class="material-icons text-[14px]">person</span> ${item.borrower || '-'}</div>` : ''}
                     </div>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        function openActionModal(item) {
+        // --- ADMIN CRUD FUNCTIONS ---
+        function openUpsertModal(editId = null) {
+            const modal = document.getElementById('upsertModal');
+            const title = document.getElementById('upsertTitle');
+            const modeInput = document.getElementById('upsertMode');
+            const idInput = document.getElementById('upsertId');
+            
+            // Clear form
+            document.getElementById('upsertName').value = '';
+            document.getElementById('upsertType').value = 'General';
+            document.getElementById('upsertFile').value = '';
+
+            if (editId) {
+                // EDIT MODE
+                const item = equipmentData.find(i => i.id === editId);
+                title.innerText = 'Edit Equipment';
+                modeInput.value = 'edit';
+                idInput.value = item.id;
+                idInput.readOnly = true; // Cannot change ID
+                idInput.classList.add('bg-gray-100');
+                
+                document.getElementById('upsertName').value = item.name;
+                document.getElementById('upsertType').value = item.type;
+            } else {
+                // ADD MODE
+                title.innerText = 'Add New Equipment';
+                modeInput.value = 'add';
+                idInput.value = `TFS-${String(equipmentData.length + 1).padStart(3, '0')}`; // Auto Generate ID
+                idInput.readOnly = false;
+                idInput.classList.remove('bg-gray-100');
+            }
+            modal.classList.remove('hidden');
+        }
+
+        async function submitUpsert() {
+            const mode = document.getElementById('upsertMode').value;
+            const id = document.getElementById('upsertId').value;
+            const name = document.getElementById('upsertName').value;
+            const type = document.getElementById('upsertType').value;
+            const fileInput = document.getElementById('upsertFile');
+
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            closeModal('upsertModal');
+
+            // Handle Image to Base64
+            let imageData = null;
+            let imageName = null;
+
+            if (fileInput.files.length > 0) {
+                try {
+                    const file = fileInput.files[0];
+                    imageName = file.name;
+                    imageData = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = e => resolve(e.target.result); // This is base64
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
+                } catch (e) {
+                    console.error("Image Error", e);
+                }
+            }
+
+            const payload = {
+                action: mode, // 'add' or 'edit'
+                id: id,
+                name: name,
+                type: type,
+                imageName: imageName,
+                imageData: imageData
+            };
+
+            sendRequest(payload);
+        }
+
+        async function deleteItem(id) {
+            if(!confirm(`Are you sure you want to DELETE ${id}?`)) return;
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            sendRequest({ action: 'delete', id: id });
+        }
+
+        // --- NORMAL USER FUNCTIONS ---
+        function openBorrowModal(id) {
+            // Admin click does nothing (Admin uses edit buttons)
+            if (isAdmin) return;
+
+            const item = equipmentData.find(i => i.id === id);
             selectedItem = item;
+            
             if(item.status.includes('pending')) {
-                alert("This item is pending approval.");
+                alert("Item is pending approval.");
                 return;
             }
 
             const modal = document.getElementById('borrowModal');
-            document.getElementById('modalTitle').innerText = item.status === 'available' ? 'Borrow Request' : 'Return Request';
-            document.getElementById('modalSub').innerText = `${item.id} - ${item.name}`;
+            document.getElementById('borrowModalTitle').innerText = item.status === 'available' ? 'Borrow Request' : 'Return Request';
+            document.getElementById('borrowModalSub').innerText = `${item.id} - ${item.name}`;
             
-            const nameInput = document.getElementById('borrowerName');
+            const field = document.getElementById('borrowerField');
+            const input = document.getElementById('borrowerName');
+            
             if (item.status === 'available') {
-                nameInput.parentElement.classList.remove('hidden');
-                nameInput.required = true;
-                nameInput.value = '';
+                field.classList.remove('hidden');
+                input.required = true;
+                input.value = '';
             } else {
-                nameInput.parentElement.classList.add('hidden');
-                nameInput.required = false;
+                field.classList.add('hidden');
+                input.required = false;
             }
             modal.classList.remove('hidden');
         }
 
         async function submitBorrow() {
             if (!selectedItem) return;
-            const name = document.getElementById('borrowerName').value;
-            const action = selectedItem.status === 'available' ? 'borrow' : 'return';
-            
             closeModal('borrowModal');
             document.getElementById('loadingOverlay').classList.remove('hidden');
-
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: action,
-                        id: selectedItem.id,
-                        borrower: name
-                    })
-                });
-                alert('Request submitted! Waiting for Admin approval.');
-                fetchData();
-            } catch (err) {
-                console.error(err);
-                alert('Error submitting request');
-                document.getElementById('loadingOverlay').classList.add('hidden');
-            }
+            
+            sendRequest({
+                action: selectedItem.status === 'available' ? 'borrow' : 'return',
+                id: selectedItem.id,
+                borrower: document.getElementById('borrowerName').value
+            });
         }
 
-        // ------------------------------------------------------------------
-        // ADMIN FUNCTIONS
-        // ------------------------------------------------------------------
+        // --- AUTH & HELPER FUNCTIONS ---
         function toggleAdminLogin() {
             if (isAdmin) {
-                // Logout Logic
+                // Logout
                 isAdmin = false;
-                document.getElementById('adminText').innerText = 'Admin';
+                document.getElementById('addBtn').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.add('hidden');
+                document.getElementById('adminText').innerText = 'Admin Login';
                 document.getElementById('adminIcon').innerText = 'admin_panel_settings';
-                document.getElementById('userView').classList.remove('hidden');
-                document.getElementById('adminView').classList.add('hidden');
                 renderGrid();
-                alert("Logged out successfully.");
             } else {
-                // Show Login Modal
-                document.getElementById('adminLoginModal').classList.remove('hidden');
-                document.getElementById('adminPassword').value = '';
-                document.getElementById('adminPassword').focus();
+                document.getElementById('loginModal').classList.remove('hidden');
+                document.getElementById('adminPass').value = '';
+                document.getElementById('adminPass').focus();
             }
         }
 
-        function submitAdminLogin() {
-            const pass = document.getElementById('adminPassword').value;
-            if (pass === ADMIN_PASS) {
+        function submitLogin() {
+            if (document.getElementById('adminPass').value === ADMIN_PASSWORD) {
                 isAdmin = true;
-                closeModal('adminLoginModal');
-                
-                // UI Switch
+                closeModal('loginModal');
+                document.getElementById('addBtn').classList.remove('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
                 document.getElementById('adminText').innerText = 'Logout';
                 document.getElementById('adminIcon').innerText = 'logout';
-                document.getElementById('userView').classList.add('hidden');
-                document.getElementById('adminView').classList.remove('hidden');
-                
                 renderAdminDashboard();
+                renderGrid();
             } else {
-                alert("Incorrect Password!");
-                document.getElementById('adminPassword').value = '';
+                alert('Wrong Password');
             }
         }
 
@@ -359,118 +426,61 @@
             const noMsg = document.getElementById('noPendingMsg');
             list.innerHTML = '';
 
-            const pendingItems = equipmentData.filter(item => item.status.includes('pending'));
-
-            if (pendingItems.length === 0) {
+            const pending = equipmentData.filter(i => i.status.includes('pending'));
+            if (pending.length === 0) {
                 noMsg.classList.remove('hidden');
                 return;
             }
             noMsg.classList.add('hidden');
 
-            pendingItems.forEach(item => {
-                const reqType = item.status === 'pending_borrow' ? 'Borrow' : 'Return';
-                const badgeColor = item.status === 'pending_borrow' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800';
-                
+            pending.forEach(item => {
+                const isBorrow = item.status === 'pending_borrow';
                 const row = document.createElement('div');
-                row.className = 'p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-gray-50';
+                row.className = 'p-4 flex justify-between items-center hover:bg-gray-50';
                 row.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-xl font-bold text-gray-500">
-                            ${item.id.split('-')[1]}
+                    <div>
+                        <div class="text-xs font-bold ${isBorrow ? 'text-blue-600' : 'text-purple-600'} uppercase mb-1">
+                            ${isBorrow ? 'Borrow Request' : 'Return Request'}
                         </div>
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-xs font-bold px-2 py-0.5 rounded uppercase ${badgeColor}">${reqType} Request</span>
-                                <span class="text-xs text-gray-400">${item.id}</span>
-                            </div>
-                            <h4 class="font-bold text-gray-800">${item.name}</h4>
-                            <p class="text-sm text-gray-600">By: <span class="font-semibold">${item.borrower}</span></p>
-                        </div>
+                        <div class="font-bold text-gray-800">${item.name} <span class="text-gray-400 font-normal">(${item.id})</span></div>
+                        <div class="text-sm text-gray-500">By: ${item.borrower}</div>
                     </div>
-                    <div class="flex gap-2 w-full md:w-auto">
-                        <button onclick="handleAdminAction('${item.id}', 'approve', '${reqType.toLowerCase()}')" class="flex-1 md:flex-none px-4 py-2 bg-green-600 text-white rounded font-medium hover:bg-green-700 shadow-sm transition">
-                            Approve
-                        </button>
-                        <button onclick="handleAdminAction('${item.id}', 'reject', '${reqType.toLowerCase()}')" class="flex-1 md:flex-none px-4 py-2 bg-red-600 text-white rounded font-medium hover:bg-red-700 shadow-sm transition">
-                            Reject
-                        </button>
+                    <div class="flex gap-2">
+                        <button onclick="approve('${item.id}', 'approve', '${isBorrow ? 'borrow':'return'}')" class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700">Approve</button>
+                        <button onclick="approve('${item.id}', 'reject', '${isBorrow ? 'borrow':'return'}')" class="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700">Reject</button>
                     </div>
                 `;
                 list.appendChild(row);
             });
         }
 
-        async function handleAdminAction(id, decision, type) {
-            // decision: 'approve' | 'reject'
-            // type: 'borrow' | 'return' (to help backend know what to do)
-            
-            if(!confirm(`Are you sure you want to ${decision} this request?`)) return;
-
+        async function approve(id, decision, type) {
             document.getElementById('loadingOverlay').classList.remove('hidden');
+            sendRequest({ action: decision, id: id, type: type });
+        }
 
+        async function sendRequest(payload) {
             try {
-                // If reject, we just revert status to previous state. 
-                // But for simplicity with this backend, we might handle it same way or different.
-                // Here we send specific action to backend.
-                
-                let payload = {
-                    action: decision, // 'approve' or 'reject' (Make sure your GAS handles 'reject' or treat logic)
-                    id: id,
-                    type: type 
-                };
-                
-                // NOTE: If you haven't updated GAS to handle 'reject', 
-                // 'approve' logic in GAS usually sets status to 'borrowed' or 'available'.
-                
                 await fetch(API_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-
-                alert(`Request processed successfully.`);
-                fetchData(); // Reload to update list
-
-            } catch (err) {
-                console.error(err);
-                alert('Error processing request.');
+                // Since 'no-cors' prevents reading response, we assume success after a short delay
+                setTimeout(() => {
+                    alert('Success!');
+                    fetchData();
+                }, 2000);
+            } catch (e) {
+                console.error(e);
+                alert('Error sending request');
                 document.getElementById('loadingOverlay').classList.add('hidden');
             }
         }
 
-        // ------------------------------------------------------------------
-        // UTILS
-        // ------------------------------------------------------------------
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-        
-        function updateStats() {
-            document.getElementById('totalCount').innerText = equipmentData.length;
-            document.getElementById('availableCount').innerText = equipmentData.filter(i => i.status === 'available').length;
-            document.getElementById('borrowedCount').innerText = equipmentData.filter(i => i.status === 'borrowed').length;
-            document.getElementById('pendingCount').innerText = equipmentData.filter(i => i.status.includes('pending')).length;
-        }
-
-        function setFilter(type) {
-            currentFilter = type;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('bg-gray-800', 'text-white');
-                btn.classList.add('bg-gray-200', 'text-gray-600');
-            });
-            const activeBtn = document.querySelector(`.filter-btn[onclick="setFilter('${type}')"]`);
-            if(activeBtn) {
-                activeBtn.classList.remove('bg-gray-200', 'text-gray-600');
-                activeBtn.classList.add('bg-gray-800', 'text-white');
-            }
-            renderGrid();
-        }
-        
-        function filterEquipment() {
-            renderGrid();
-        }
-
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function setFilter(f) { currentFilter = f; document.querySelectorAll('.filter-btn').forEach(b => { b.classList.remove('bg-gray-800','text-white'); b.classList.add('bg-gray-200','text-gray-600'); }); event.target.classList.remove('bg-gray-200','text-gray-600'); event.target.classList.add('bg-gray-800','text-white'); renderGrid(); }
     </script>
 </body>
 </html>
